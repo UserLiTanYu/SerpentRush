@@ -21,6 +21,11 @@ const confirmHelpButton = document.querySelector("#confirmHelpButton");
 const pauseButton = document.querySelector("#pauseButton");
 const restartButton = document.querySelector("#restartButton");
 const musicButton = document.querySelector("#musicButton");
+const shellBgName = document.querySelector("#shellBgName");
+const boardBgName = document.querySelector("#boardBgName");
+const shellBgBtn = document.querySelector("#shellBgBtn");
+const boardBgBtn = document.querySelector("#boardBgBtn");
+const gameStage = document.querySelector(".game-stage");
 
 const boardColumns = 40;
 const boardRows = 24;
@@ -30,6 +35,31 @@ const directions = {
   down: { x: 0, y: 1 },
   left: { x: -1, y: 0 },
   right: { x: 1, y: 0 }
+};
+
+const shellBackgrounds = [
+  { name: "极光深空", cls: "shell-aurora" },
+  { name: "街机网格", cls: "shell-arcade" },
+  { name: "午夜光轨", cls: "shell-midnight" },
+  { name: "碳纤维面板", cls: "shell-carbon" },
+  { name: "电路暗板", cls: "shell-circuit" },
+  { name: "暮色霓虹", cls: "shell-sunset" }
+];
+
+const boardBackgrounds = [
+  "space",
+  "track",
+  "pixel",
+  "circuit",
+  "nebula"
+];
+
+const boardBgNames = {
+  space: "深空网格",
+  track: "霓虹赛道",
+  pixel: "像素地砖",
+  circuit: "电路核心",
+  nebula: "暗色星云"
 };
 
 const colors = {
@@ -65,6 +95,8 @@ let gameState;
 let particles;
 let floatingTexts;
 let audioContext;
+let shellBgIndex;
+let boardBgIndex;
 let musicEnabled;
 let musicGain;
 let musicTimer;
@@ -84,6 +116,48 @@ function readBestScore() {
 
 function saveBestScore(value) {
   localStorage.setItem("serpentRushBest", String(value));
+}
+
+function loadBgPreferences() {
+  shellBgIndex = Number(localStorage.getItem("serpentRushShellBg") || "5");
+  boardBgIndex = Number(localStorage.getItem("serpentRushBoardBg") || "4");
+  if (!Number.isInteger(shellBgIndex) || !shellBackgrounds[shellBgIndex]) {
+    shellBgIndex = 5;
+  }
+  if (!Number.isInteger(boardBgIndex) || !boardBackgrounds[boardBgIndex]) {
+    boardBgIndex = 4;
+  }
+}
+
+function saveShellBg(index) {
+  localStorage.setItem("serpentRushShellBg", String(index));
+}
+
+function saveBoardBg(index) {
+  localStorage.setItem("serpentRushBoardBg", String(index));
+}
+
+function applyShellBackground() {
+  shellBackgrounds.forEach((bg) => gameStage.classList.remove(bg.cls));
+  const current = shellBackgrounds[shellBgIndex];
+  gameStage.classList.add(current.cls);
+  shellBgName.textContent = current.name;
+}
+
+function applyBoardBackground() {
+  boardBgName.textContent = boardBgNames[boardBackgrounds[boardBgIndex]];
+}
+
+function cycleShellBackground() {
+  shellBgIndex = (shellBgIndex + 1) % shellBackgrounds.length;
+  saveShellBg(shellBgIndex);
+  applyShellBackground();
+}
+
+function cycleBoardBackground() {
+  boardBgIndex = (boardBgIndex + 1) % boardBackgrounds.length;
+  saveBoardBg(boardBgIndex);
+  applyBoardBackground();
 }
 
 function resetGame() {
@@ -555,20 +629,95 @@ function drawGlow(x, y, radius, color) {
   ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
 }
 
-function drawNebulaBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, "#111426");
-  gradient.addColorStop(1, "#06070d");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+const boardBgDrawFns = {};
 
+boardBgDrawFns.space = function() {
+  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  g.addColorStop(0, "#101824");
+  g.addColorStop(1, "#05070b");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawGlow(canvas.width * 0.18, canvas.height * 0.18, canvas.width * 0.16, "rgba(92,242,139,0.14)");
+  drawGlow(canvas.width * 0.86, canvas.height * 0.76, canvas.width * 0.22, "rgba(77,215,255,0.12)");
+};
+
+boardBgDrawFns.track = function() {
+  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  g.addColorStop(0, "#111821");
+  g.addColorStop(1, "#070a0f");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.lineWidth = Math.max(4, canvas.width * 0.014);
+  ctx.strokeStyle = "rgba(92,242,139,0.16)";
+  ctx.beginPath();
+  ctx.moveTo(-canvas.width * 0.1, canvas.height * 0.78);
+  ctx.lineTo(canvas.width * 0.42, -canvas.height * 0.06);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(77,215,255,0.12)";
+  ctx.beginPath();
+  ctx.moveTo(canvas.width * 0.18, canvas.height * 1.12);
+  ctx.lineTo(canvas.width * 0.78, -canvas.height * 0.08);
+  ctx.stroke();
+  ctx.lineWidth = Math.max(2, canvas.width * 0.004);
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.setLineDash([22, 24]);
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height * 0.62);
+  ctx.lineTo(canvas.width, canvas.height * 0.18);
+  ctx.stroke();
+  ctx.setLineDash([]);
+};
+
+boardBgDrawFns.pixel = function() {
+  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  g.addColorStop(0, "#101824");
+  g.addColorStop(1, "#070b0f");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawGlow(canvas.width * 0.15, canvas.height * 0.2, canvas.width * 0.15, "rgba(92,242,139,0.15)");
+  drawGlow(canvas.width * 0.82, canvas.height * 0.18, canvas.width * 0.17, "rgba(169,139,255,0.11)");
+};
+
+boardBgDrawFns.circuit = function() {
+  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  g.addColorStop(0, "#0d1718");
+  g.addColorStop(1, "#070b0d");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "rgba(92,242,139,0.14)";
+  ctx.lineWidth = Math.max(1, canvas.width * 0.0016);
+  for (let i = 0; i < 10; i += 1) {
+    const y = canvas.height * 0.1 + i * (canvas.height * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.05, y);
+    ctx.lineTo(canvas.width * 0.22 + i * canvas.width * 0.022, y);
+    ctx.lineTo(canvas.width * 0.28 + i * canvas.width * 0.022, y + canvas.height * 0.05);
+    ctx.lineTo(canvas.width * 0.94, y + canvas.height * 0.05);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 30; i += 1) {
+    const x = canvas.width * 0.06 + ((i * 113) % (canvas.width * 0.88));
+    const y = canvas.height * 0.09 + ((i * 79) % (canvas.height * 0.82));
+    ctx.fillStyle = i % 3 === 0 ? "rgba(77,215,255,0.28)" : "rgba(92,242,139,0.22)";
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(2, canvas.width * 0.003), 0, Math.PI * 2);
+    ctx.fill();
+  }
+};
+
+boardBgDrawFns.nebula = function() {
+  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  g.addColorStop(0, "#111426");
+  g.addColorStop(1, "#06070d");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGlow(canvas.width * 0.28, canvas.height * 0.28, canvas.width * 0.26, "rgba(169,139,255,0.2)");
   drawGlow(canvas.width * 0.62, canvas.height * 0.58, canvas.width * 0.3, "rgba(77,215,255,0.15)");
   drawGlow(canvas.width * 0.8, canvas.height * 0.22, canvas.width * 0.18, "rgba(255,107,107,0.12)");
-}
+};
 
 function drawBoard() {
-  drawNebulaBackground();
+  boardBgDrawFns[boardBackgrounds[boardBgIndex]]();
 
   for (let y = 0; y < boardRows; y += 1) {
     for (let x = 0; x < boardColumns; x += 1) {
@@ -822,5 +971,16 @@ musicButton.addEventListener("click", () => {
   toggleMusic();
 });
 
+shellBgBtn.addEventListener("click", () => {
+  cycleShellBackground();
+});
+
+boardBgBtn.addEventListener("click", () => {
+  cycleBoardBackground();
+});
+
 resetGame();
+loadBgPreferences();
+applyShellBackground();
+applyBoardBackground();
 requestAnimationFrame(tick);
