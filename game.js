@@ -143,9 +143,11 @@ function updateStatus(text) {
 }
 
 function updateHud() {
+  const activeCombo = combo * (multiplierTicks > 0 ? 2 : 1);
+  const comboText = activeCombo.toFixed(1).replace(/\.0$/, "");
   scoreValue.textContent = score;
   bestValue.textContent = Math.max(best, score);
-  comboValue.textContent = multiplierTicks > 0 ? `x${combo * 2}` : `x${combo}`;
+  comboValue.textContent = `x${comboText}`;
   levelValue.textContent = level;
   rushLabel.textContent = `${Math.round(rush)}%`;
   rushMeter.style.width = `${Math.min(100, rush)}%`;

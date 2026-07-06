@@ -78,6 +78,18 @@ button {
   gap: 14px;
 }
 
+.top-bar {
+  position: relative;
+  justify-content: center;
+  min-height: 112px;
+  padding: 8px 126px 0;
+  text-align: center;
+}
+
+.title-block {
+  min-width: 0;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: var(--green);
@@ -103,6 +115,10 @@ h2 {
 }
 
 .status-pill {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
   min-width: 86px;
   padding: 10px 14px;
   border-radius: 999px;
@@ -219,6 +235,7 @@ canvas {
   border-radius: 8px;
   background: var(--panel-strong);
   border: 1px solid var(--line);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -232,8 +249,14 @@ canvas {
 }
 
 .stat-card strong {
-  font-size: 1.65rem;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 1.58rem;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .meter-block,
@@ -390,7 +413,8 @@ canvas {
   }
 
   .top-bar {
-    align-items: flex-start;
+    min-height: 96px;
+    padding: 8px 90px 0;
   }
 
   h1 {
@@ -401,6 +425,7 @@ canvas {
     min-width: 74px;
     padding: 9px 10px;
     font-size: 0.86rem;
+    right: 0;
   }
 
   .stats-grid {
