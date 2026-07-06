@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>主界面背景预览</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101216;
+        --panel: rgba(25, 28, 33, 0.92);
+        --line: rgba(255, 255, 255, 0.12);
+        --text: #f6f1e8;
+        --muted: #a7adb4;
+        --green: #5cf28b;
+        --cyan: #4dd7ff;
+        --coral: #ff6b6b;
+        --violet: #a98bff;
+        --gold: #ffd166;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      }
+
+      main {
+        width: min(1440px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 34px;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        font-size: 2rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+      }
+
+      .preview-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(25, 28, 33, 0.86);
+        padding: 14px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.04rem;
+      }
+
+      .tag {
+        color: var(--gold);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .stage {
+        min-height: 330px;
+        border-radius: 8px;
+        padding: 12px;
+        overflow: hidden;
+      }
+
+      .mock-shell {
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 110px;
+        gap: 10px;
+      }
+
+      .mock-game,
+      .mock-side {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(31, 36, 45, 0.9), rgba(13, 16, 23, 0.92));
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+      }
+
+      .mock-game {
+        display: grid;
+        grid-template-rows: 38px 1fr;
+        padding: 10px;
+      }
+
+      .mock-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+      }
+
+      .mock-board {
+        border-radius: 8px;
+        background:
+          radial-gradient(circle at 28% 28%, rgba(169, 139, 255, 0.18), transparent 26%),
+          radial-gradient(circle at 62% 58%, rgba(77, 215, 255, 0.14), transparent 30%),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          #080c12;
+        background-size: auto, auto, 18px 18px, 18px 18px, auto;
+      }
+
+      .mock-side {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .mock-pill,
+      .mock-stat,
+      .mock-button {
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.07);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+
+      .mock-pill {
+        height: 30px;
+        background: linear-gradient(90deg, var(--green), var(--coral));
+      }
+
+      .mock-stat {
+        height: 34px;
+      }
+
+      .mock-button {
+        height: 28px;
+      }
+
+      .aurora {
+        background:
+          radial-gradient(circle at 18% 22%, rgba(92, 242, 139, 0.25), transparent 24%),
+          radial-gradient(circle at 86% 18%, rgba(77, 215, 255, 0.22), transparent 26%),
+          radial-gradient(circle at 48% 92%, rgba(169, 139, 255, 0.18), transparent 28%),
+          linear-gradient(180deg, #121722, #080b10);
+      }
+
+      .arcade {
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          radial-gradient(circle at 12% 14%, rgba(92, 242, 139, 0.18), transparent 18%),
+          linear-gradient(180deg, #111821, #080b10);
+        background-size: 32px 32px, 32px 32px, auto, auto;
+      }
+
+      .midnight {
+        background:
+          linear-gradient(125deg, transparent 0 18%, rgba(92, 242, 139, 0.18) 18% 20%, transparent 20% 48%, rgba(77, 215, 255, 0.15) 48% 50%, transparent 50%),
+          radial-gradient(circle at 78% 72%, rgba(255, 107, 107, 0.16), transparent 24%),
+          linear-gradient(180deg, #141922, #080a0f);
+      }
+
+      .carbon {
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.045) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.035) 50% 75%, transparent 75%),
+          linear-gradient(180deg, #1b2028, #0d1016);
+        background-size: 16px 16px, auto;
+      }
+
+      .circuit {
+        background:
+          linear-gradient(90deg, rgba(92, 242, 139, 0.12) 0 2px, transparent 2px 42px),
+          linear-gradient(180deg, rgba(77, 215, 255, 0.1) 0 2px, transparent 2px 42px),
+          radial-gradient(circle at 85% 18%, rgba(92, 242, 139, 0.22), transparent 22%),
+          linear-gradient(180deg, #0d1718, #070b0d);
+        background-size: 42px 42px, 42px 42px, auto, auto;
+      }
+
+      .sunset {
+        background:
+          radial-gradient(circle at 82% 18%, rgba(255, 209, 102, 0.24), transparent 24%),
+          radial-gradient(circle at 18% 88%, rgba(255, 107, 107, 0.2), transparent 26%),
+          linear-gradient(135deg, rgba(169, 139, 255, 0.12), transparent 42%),
+          linear-gradient(180deg, #17151f, #090a0f);
+      }
+
+      @media (max-width: 840px) {
+        .preview-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .mock-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .mock-side {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>主界面背景候选</h1>
+      <p>这些预览的是整个界面最底层背景，也就是左右两个大面板后面的背景。正式游戏还没有被修改。</p>
+
+      <section class="preview-grid">
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>1. 极光深空</h2>
+            <span class="tag">柔和高级</span>
+          </div>
+          <div class="stage aurora">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>2. 街机网格</h2>
+            <span class="tag">游戏感</span>
+          </div>
+          <div class="stage arcade">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>3. 午夜光轨</h2>
+            <span class="tag">速度感</span>
+          </div>
+          <div class="stage midnight">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>4. 碳纤维面板</h2>
+            <span class="tag">稳重</span>
+          </div>
+          <div class="stage carbon">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>5. 电路暗板</h2>
+            <span class="tag">科技</span>
+          </div>
+          <div class="stage circuit">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>6. 暮色霓虹</h2>
+            <span class="tag">鲜明</span>
+          </div>
+          <div class="stage sunset">
+            <div class="mock-shell">
+              <div class="mock-game"><div class="mock-title">SerpentRush</div><div class="mock-board"></div></div>
+              <div class="mock-side"><div class="mock-pill"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-stat"></div><div class="mock-button"></div></div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

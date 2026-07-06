@@ -70,13 +70,10 @@ button {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 11% 14%, rgba(92, 242, 139, 0.16), transparent 18%),
-    radial-gradient(circle at 88% 18%, rgba(77, 215, 255, 0.12), transparent 20%),
-    linear-gradient(90deg, rgba(92, 242, 139, 0.1) 0 2px, transparent 2px 28px),
-    linear-gradient(180deg, rgba(77, 215, 255, 0.08) 0 2px, transparent 2px 28px),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.04) 50% 75%, transparent 75%),
-    linear-gradient(180deg, rgba(31, 36, 45, 0.97), rgba(10, 13, 20, 0.99));
-  background-size: auto, auto, 28px 28px, 28px 28px, 18px 18px, auto;
+    radial-gradient(circle at 82% 18%, rgba(255, 209, 102, 0.2), transparent 25%),
+    radial-gradient(circle at 18% 88%, rgba(255, 107, 107, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(169, 139, 255, 0.13), transparent 44%),
+    linear-gradient(180deg, rgba(32, 31, 43, 0.97), rgba(10, 12, 18, 0.99));
 }
 
 .top-bar,

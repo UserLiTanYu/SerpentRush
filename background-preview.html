@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>游戏背景预览</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101216;
+        --panel: #191c21;
+        --line: rgba(255, 255, 255, 0.12);
+        --text: #f6f1e8;
+        --muted: #a7adb4;
+        --green: #5cf28b;
+        --cyan: #4dd7ff;
+        --coral: #ff6b6b;
+        --violet: #a98bff;
+        --gold: #ffd166;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      }
+
+      main {
+        width: min(1280px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 32px;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        font-size: 2rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .preview-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(25, 28, 33, 0.92);
+        padding: 14px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+      }
+
+      .preview-card canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 5 / 3;
+        border-radius: 8px;
+        background: #0b0d10;
+        box-shadow: inset 0 0 0 1px var(--line);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .tag {
+        color: var(--gold);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      @media (max-width: 760px) {
+        .preview-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>游戏棋盘背景候选</h1>
+      <p>这些只预览游戏棋盘内部背景，不影响界面左右面板。选中一个后，我再应用到正式游戏里。</p>
+
+      <section class="preview-grid">
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>1. 深空网格</h2>
+            <span class="tag">清爽</span>
+          </div>
+          <canvas data-style="space" width="1000" height="600"></canvas>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>2. 霓虹赛道</h2>
+            <span class="tag">速度感</span>
+          </div>
+          <canvas data-style="track" width="1000" height="600"></canvas>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>3. 像素地砖</h2>
+            <span class="tag">街机</span>
+          </div>
+          <canvas data-style="pixel" width="1000" height="600"></canvas>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>4. 电路核心</h2>
+            <span class="tag">科技</span>
+          </div>
+          <canvas data-style="circuit" width="1000" height="600"></canvas>
+        </article>
+
+        <article class="preview-card">
+          <div class="card-head">
+            <h2>5. 暗色星云</h2>
+            <span class="tag">氛围</span>
+          </div>
+          <canvas data-style="nebula" width="1000" height="600"></canvas>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const colors = {
+        boardA: "#0b0f14",
+        boardB: "#101720",
+        green: "#5cf28b",
+        cyan: "#4dd7ff",
+        coral: "#ff6b6b",
+        violet: "#a98bff",
+        gold: "#ffd166"
+      };
+
+      function fillBase(ctx, width, height, top = "#10151c", bottom = "#06090d") {
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, top);
+        gradient.addColorStop(1, bottom);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      function drawGrid(ctx, width, height, size, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= width; x += size) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= height; y += size) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+      }
+
+      function drawGlow(ctx, x, y, radius, color) {
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        glow.addColorStop(0, color);
+        glow.addColorStop(1, "transparent");
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+      }
+
+      function drawChecker(ctx, width, height, size, a, b) {
+        for (let y = 0; y < height; y += size) {
+          for (let x = 0; x < width; x += size) {
+            ctx.fillStyle = (x / size + y / size) % 2 === 0 ? a : b;
+            ctx.fillRect(x, y, size, size);
+          }
+        }
+      }
+
+      function drawTrack(ctx, width, height) {
+        fillBase(ctx, width, height, "#111821", "#070a0f");
+        drawGrid(ctx, width, height, 40, "rgba(255,255,255,0.035)");
+        ctx.lineWidth = 18;
+        ctx.strokeStyle = "rgba(92,242,139,0.22)";
+        ctx.beginPath();
+        ctx.moveTo(-120, height * 0.78);
+        ctx.lineTo(width * 0.42, -40);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(77,215,255,0.18)";
+        ctx.beginPath();
+        ctx.moveTo(width * 0.18, height + 80);
+        ctx.lineTo(width * 0.78, -60);
+        ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.setLineDash([22, 24]);
+        ctx.beginPath();
+        ctx.moveTo(0, height * 0.62);
+        ctx.lineTo(width, height * 0.18);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function drawCircuit(ctx, width, height) {
+        fillBase(ctx, width, height, "#0d1718", "#070b0d");
+        drawGrid(ctx, width, height, 36, "rgba(92,242,139,0.05)");
+        ctx.strokeStyle = "rgba(92,242,139,0.24)";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 10; i += 1) {
+          const y = 70 + i * 50;
+          ctx.beginPath();
+          ctx.moveTo(60, y);
+          ctx.lineTo(240 + i * 26, y);
+          ctx.lineTo(300 + i * 26, y + 34);
+          ctx.lineTo(width - 70, y + 34);
+          ctx.stroke();
+        }
+        for (let i = 0; i < 30; i += 1) {
+          const x = 70 + (i * 113) % (width - 140);
+          const y = 60 + (i * 79) % (height - 120);
+          ctx.fillStyle = i % 3 === 0 ? colors.cyan : colors.green;
+          ctx.beginPath();
+          ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function drawBackground(canvas) {
+        const ctx = canvas.getContext("2d");
+        const { width, height } = canvas;
+        const style = canvas.dataset.style;
+
+        if (style === "space") {
+          fillBase(ctx, width, height, "#101824", "#05070b");
+          drawGrid(ctx, width, height, 32, "rgba(255,255,255,0.045)");
+          drawGlow(ctx, width * 0.18, height * 0.18, 160, "rgba(92,242,139,0.14)");
+          drawGlow(ctx, width * 0.86, height * 0.76, 220, "rgba(77,215,255,0.12)");
+        }
+
+        if (style === "track") {
+          drawTrack(ctx, width, height);
+        }
+
+        if (style === "pixel") {
+          drawChecker(ctx, width, height, 28, "#0e141b", "#111a23");
+          drawGrid(ctx, width, height, 56, "rgba(255,255,255,0.055)");
+          drawGlow(ctx, width * 0.15, height * 0.2, 150, "rgba(92,242,139,0.15)");
+          drawGlow(ctx, width * 0.82, height * 0.18, 170, "rgba(169,139,255,0.11)");
+        }
+
+        if (style === "circuit") {
+          drawCircuit(ctx, width, height);
+        }
+
+        if (style === "nebula") {
+          fillBase(ctx, width, height, "#111426", "#06070d");
+          drawGlow(ctx, width * 0.28, height * 0.28, 260, "rgba(169,139,255,0.2)");
+          drawGlow(ctx, width * 0.62, height * 0.58, 300, "rgba(77,215,255,0.15)");
+          drawGlow(ctx, width * 0.8, height * 0.22, 180, "rgba(255,107,107,0.12)");
+          drawGrid(ctx, width, height, 40, "rgba(255,255,255,0.035)");
+        }
+      }
+
+      document.querySelectorAll("canvas").forEach(drawBackground);
+    </script>
+  </body>
+</html>

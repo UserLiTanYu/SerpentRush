@@ -547,14 +547,33 @@ function updateEffects(delta) {
   });
 }
 
-function drawBoard() {
-  ctx.fillStyle = colors.boardA;
+function drawGlow(x, y, radius, color) {
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  glow.addColorStop(0, color);
+  glow.addColorStop(1, "transparent");
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+}
+
+function drawNebulaBackground() {
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, "#111426");
+  gradient.addColorStop(1, "#06070d");
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawGlow(canvas.width * 0.28, canvas.height * 0.28, canvas.width * 0.26, "rgba(169,139,255,0.2)");
+  drawGlow(canvas.width * 0.62, canvas.height * 0.58, canvas.width * 0.3, "rgba(77,215,255,0.15)");
+  drawGlow(canvas.width * 0.8, canvas.height * 0.22, canvas.width * 0.18, "rgba(255,107,107,0.12)");
+}
+
+function drawBoard() {
+  drawNebulaBackground();
 
   for (let y = 0; y < boardRows; y += 1) {
     for (let x = 0; x < boardColumns; x += 1) {
       if ((x + y) % 2 === 0) {
-        ctx.fillStyle = colors.boardB;
+        ctx.fillStyle = "rgba(255,255,255,0.025)";
         ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     }
@@ -685,16 +704,6 @@ function drawEffects() {
   ctx.globalAlpha = 1;
 }
 
-function drawRushFrame() {
-  if (rush < 100) {
-    return;
-  }
-  const alpha = 0.25 + Math.sin(performance.now() / 90) * 0.12;
-  ctx.strokeStyle = `rgba(255, 209, 102, ${alpha})`;
-  ctx.lineWidth = 12;
-  ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
-}
-
 function render() {
   drawBoard();
   drawFoodItem(food);
@@ -702,7 +711,6 @@ function render() {
   drawObstacles();
   drawSnake();
   drawEffects();
-  drawRushFrame();
 }
 
 function tick(time) {
