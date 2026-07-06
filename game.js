@@ -74,6 +74,7 @@ function saveBestScore(value) {
 }
 
 function resetGame() {
+  stopMusic();
   snake = [
     { x: 8, y: 12 },
     { x: 7, y: 12 },
@@ -111,11 +112,13 @@ function startGame() {
   lastTime = performance.now();
   hideOverlay();
   updateStatus("进行中");
+  startMusic();
 }
 
 function pauseGame() {
   if (gameState === "running") {
     gameState = "paused";
+    stopMusic();
     showOverlay("暂停", "稍作休整", "本局游戏会停在当前位置，准备好就继续冲刺。", "继续游戏");
     updateStatus("已暂停");
   } else if (gameState === "paused") {
@@ -125,6 +128,7 @@ function pauseGame() {
 
 function gameOver() {
   gameState = "gameover";
+  stopMusic();
   best = Math.max(best, score);
   saveBestScore(best);
   burst(snake[0], colors.fruit, 28);
@@ -380,7 +384,7 @@ function scheduleMusic() {
 }
 
 function startMusic() {
-  if (!audioContext || !musicEnabled || musicGain) {
+  if (!audioContext || !musicEnabled || musicGain || gameState !== "running") {
     return;
   }
 
@@ -414,7 +418,7 @@ function stopMusic() {
 function toggleMusic() {
   unlockAudio();
   musicEnabled = !musicEnabled;
-  if (musicEnabled) {
+  if (musicEnabled && gameState === "running") {
     startMusic();
   } else {
     stopMusic();
@@ -617,7 +621,6 @@ function unlockAudio() {
   if (audioContext.state === "suspended") {
     audioContext.resume();
   }
-  startMusic();
 }
 
 window.addEventListener("keydown", (event) => {
