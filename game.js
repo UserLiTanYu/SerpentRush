@@ -13,6 +13,10 @@ const overlayLabel = document.querySelector("#overlayLabel");
 const overlayTitle = document.querySelector("#overlayTitle");
 const overlayCopy = document.querySelector("#overlayCopy");
 const startButton = document.querySelector("#startButton");
+const helpButton = document.querySelector("#helpButton");
+const helpModal = document.querySelector("#helpModal");
+const closeHelpButton = document.querySelector("#closeHelpButton");
+const confirmHelpButton = document.querySelector("#confirmHelpButton");
 const pauseButton = document.querySelector("#pauseButton");
 const restartButton = document.querySelector("#restartButton");
 const musicButton = document.querySelector("#musicButton");
@@ -65,6 +69,7 @@ let musicGain;
 let musicTimer;
 let musicNextTime;
 let musicStep;
+let helpPreviousState;
 
 function readBestScore() {
   return Number(localStorage.getItem("serpentRushBest") || "0");
@@ -427,6 +432,33 @@ function toggleMusic() {
   updateHud();
 }
 
+function openHelp() {
+  helpPreviousState = gameState;
+  if (gameState === "running") {
+    gameState = "paused";
+    stopMusic();
+    updateStatus("看说明");
+    updateHud();
+  }
+  helpModal.classList.remove("is-hidden");
+  closeHelpButton.focus();
+}
+
+function closeHelp() {
+  helpModal.classList.add("is-hidden");
+  if (helpPreviousState === "running" && gameState === "paused") {
+    gameState = "running";
+    lastTime = performance.now();
+    updateStatus("进行中");
+    startMusic();
+  } else if (gameState === "paused") {
+    updateStatus("已暂停");
+  }
+  updateHud();
+  helpButton.focus();
+  helpPreviousState = null;
+}
+
 function updateEffects(delta) {
   particles = particles.filter((particle) => {
     particle.life -= delta;
@@ -629,6 +661,14 @@ function unlockAudio() {
 }
 
 window.addEventListener("keydown", (event) => {
+  if (!helpModal.classList.contains("is-hidden")) {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      closeHelp();
+    }
+    return;
+  }
+
   const keyMap = {
     ArrowUp: "up",
     KeyW: "up",
@@ -667,6 +707,24 @@ document.querySelectorAll("[data-dir]").forEach((button) => {
 startButton.addEventListener("click", () => {
   unlockAudio();
   startGame();
+});
+
+helpButton.addEventListener("click", () => {
+  openHelp();
+});
+
+closeHelpButton.addEventListener("click", () => {
+  closeHelp();
+});
+
+confirmHelpButton.addEventListener("click", () => {
+  closeHelp();
+});
+
+helpModal.addEventListener("click", (event) => {
+  if (event.target === helpModal) {
+    closeHelp();
+  }
 });
 
 pauseButton.addEventListener("click", () => {

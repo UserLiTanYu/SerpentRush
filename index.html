@@ -98,12 +98,50 @@
         </div>
 
         <div class="actions">
+          <button id="helpButton" type="button">玩法说明</button>
           <button id="pauseButton" type="button">暂停</button>
           <button id="restartButton" type="button">重开</button>
           <button id="musicButton" type="button">音乐 开</button>
         </div>
       </aside>
     </main>
+
+    <div class="help-modal is-hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="help-panel">
+        <div class="help-head">
+          <div>
+            <p class="round-label">玩法说明</p>
+            <h2 id="helpTitle">SerpentRush 是什么</h2>
+          </div>
+          <button class="close-button" id="closeHelpButton" type="button" aria-label="关闭玩法说明">×</button>
+        </div>
+
+        <div class="help-content">
+          <section>
+            <h3>目标</h3>
+            <p>控制蛇收集果实和特殊道具，尽量拿到更高分，同时避开墙壁、自己的身体和灰色障碍。</p>
+          </section>
+          <section>
+            <h3>等级</h3>
+            <p>等级会随着分数提升。等级越高，蛇移动越快，场上障碍也会逐步增加，后期更考验反应和路线规划。</p>
+          </section>
+          <section>
+            <h3>连击</h3>
+            <p>连续吃到道具会提高连击倍率，得分也会跟着变高。长时间没有吃到东西时，连击会慢慢下降。</p>
+          </section>
+          <section>
+            <h3>冲刺与道具</h3>
+            <p>果实加基础分和能量；电光会直接充满冲刺能量；棱晶会让得分暂时翻倍。冲刺能量满时，蛇会进入更快的节奏。</p>
+          </section>
+          <section>
+            <h3>联机</h3>
+            <p>当前版本是本地单机玩法，没有联网对战或在线匹配。面板里的“连击”指得分倍率，不是联机功能。</p>
+          </section>
+        </div>
+
+        <button class="primary-action" id="confirmHelpButton" type="button">知道了</button>
+      </div>
+    </div>
 
     <script src="game.js"></script>
   </body>
