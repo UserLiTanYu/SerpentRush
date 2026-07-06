@@ -45,13 +45,13 @@ button {
 }
 
 .app-shell {
-  width: min(1180px, calc(100vw - 28px));
+  width: min(1440px, calc(100vw - 32px));
   min-height: 100vh;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 16px 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
   align-items: center;
 }
 
@@ -64,8 +64,11 @@ button {
 
 .game-stage {
   border-radius: 8px;
-  padding: 18px;
+  min-height: calc(100vh - 32px);
+  padding: 18px 22px 22px;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-bar,
@@ -81,8 +84,8 @@ button {
 .top-bar {
   position: relative;
   justify-content: center;
-  min-height: 112px;
-  padding: 8px 126px 0;
+  min-height: 82px;
+  padding: 4px 126px 0;
   text-align: center;
 }
 
@@ -107,7 +110,7 @@ h2 {
 }
 
 h1 {
-  font-size: 4.15rem;
+  font-size: 3.65rem;
 }
 
 h2 {
@@ -131,9 +134,9 @@ h2 {
 
 .play-area {
   position: relative;
-  width: min(100%, 72vh);
+  width: min(100%, calc(100vh - 152px), 860px);
   aspect-ratio: 1;
-  margin: 18px auto 0;
+  margin: 10px auto 0;
   overflow: hidden;
   border-radius: 8px;
   background: var(--ink);
@@ -202,7 +205,7 @@ canvas {
 
 .side-panel {
   border-radius: 8px;
-  padding: 18px;
+  padding: 16px;
 }
 
 .brand-block {
@@ -230,8 +233,8 @@ canvas {
 }
 
 .stat-card {
-  min-height: 86px;
-  padding: 14px;
+  min-height: 78px;
+  padding: 12px;
   border-radius: 8px;
   background: var(--panel-strong);
   border: 1px solid var(--line);
@@ -261,7 +264,7 @@ canvas {
 
 .meter-block,
 .inventory {
-  padding: 16px;
+  padding: 14px;
   border-radius: 8px;
   background: var(--panel-strong);
   border: 1px solid var(--line);
@@ -389,12 +392,16 @@ canvas {
     align-items: start;
   }
 
+  .game-stage {
+    min-height: auto;
+  }
+
   .side-panel {
     order: -1;
   }
 
   .play-area {
-    width: min(100%, 78vh);
+    width: min(100%, 78vh, 760px);
   }
 
   .touch-pad {
@@ -415,7 +422,7 @@ canvas {
   }
 
   .top-bar {
-    min-height: 96px;
+    min-height: 86px;
     padding: 8px 90px 0;
   }
 
