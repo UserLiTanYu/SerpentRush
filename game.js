@@ -15,6 +15,7 @@ const overlayCopy = document.querySelector("#overlayCopy");
 const startButton = document.querySelector("#startButton");
 const pauseButton = document.querySelector("#pauseButton");
 const restartButton = document.querySelector("#restartButton");
+const musicButton = document.querySelector("#musicButton");
 
 const boardSize = 24;
 const cellSize = canvas.width / boardSize;
@@ -58,6 +59,11 @@ let gameState;
 let particles;
 let floatingTexts;
 let audioContext;
+let musicEnabled;
+let musicGain;
+let musicTimer;
+let musicNextTime;
+let musicStep;
 
 function readBestScore() {
   return Number(localStorage.getItem("serpentRushBest") || "0");
@@ -86,6 +92,7 @@ function resetGame() {
   gameState = "ready";
   particles = [];
   floatingTexts = [];
+  musicEnabled = musicEnabled ?? true;
   best = readBestScore();
   food = spawnItem("fruit");
   specialFood = null;
@@ -152,6 +159,7 @@ function updateHud() {
   rushLabel.textContent = `${Math.round(rush)}%`;
   rushMeter.style.width = `${Math.min(100, rush)}%`;
   pauseButton.textContent = gameState === "paused" ? "继续" : "暂停";
+  musicButton.textContent = musicEnabled ? "音乐 开" : "音乐 关";
 }
 
 function setDirection(name) {
@@ -321,6 +329,97 @@ function playTone(type) {
   gain.connect(audioContext.destination);
   osc.start();
   osc.stop(audioContext.currentTime + 0.13);
+}
+
+function playMusicNote(frequency, startTime, duration, type, volume) {
+  if (!musicGain || frequency <= 0) {
+    return;
+  }
+
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, startTime);
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  osc.connect(gain);
+  gain.connect(musicGain);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.04);
+}
+
+function scheduleMusic() {
+  if (!audioContext || !musicGain || !musicEnabled) {
+    return;
+  }
+
+  const tempo = 126;
+  const stepDuration = 60 / tempo / 2;
+  const lookAhead = audioContext.currentTime + 1.2;
+  const bassNotes = [130.81, 0, 98, 0, 110, 0, 87.31, 0, 130.81, 0, 146.83, 0, 98, 0, 116.54, 0];
+  const leadNotes = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 0, 659.25, 783.99, 880, 1046.5, 880, 783.99, 659.25, 0];
+  const sparkleNotes = [0, 0, 0, 1046.5, 0, 0, 987.77, 0, 0, 1174.66, 0, 0, 1046.5, 0, 0, 0];
+
+  while (musicNextTime < lookAhead) {
+    const index = musicStep % 16;
+    playMusicNote(bassNotes[index], musicNextTime, stepDuration * 1.6, "triangle", 0.034);
+    playMusicNote(leadNotes[index], musicNextTime + stepDuration * 0.08, stepDuration * 0.72, "square", 0.018);
+
+    if (sparkleNotes[index]) {
+      playMusicNote(sparkleNotes[index], musicNextTime + stepDuration * 0.44, stepDuration * 0.38, "sine", 0.014);
+    }
+
+    if (musicStep % 8 === 0) {
+      playMusicNote(bassNotes[index] / 2, musicNextTime, stepDuration * 3.4, "sine", 0.016);
+    }
+
+    musicNextTime += stepDuration;
+    musicStep += 1;
+  }
+}
+
+function startMusic() {
+  if (!audioContext || !musicEnabled || musicGain) {
+    return;
+  }
+
+  musicGain = audioContext.createGain();
+  musicGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+  musicGain.gain.exponentialRampToValueAtTime(0.80, audioContext.currentTime + 0.35);
+  musicGain.connect(audioContext.destination);
+  musicNextTime = audioContext.currentTime + 0.05;
+  musicStep = 0;
+  scheduleMusic();
+  musicTimer = window.setInterval(scheduleMusic, 260);
+}
+
+function stopMusic() {
+  if (musicTimer) {
+    window.clearInterval(musicTimer);
+    musicTimer = null;
+  }
+
+  if (musicGain && audioContext) {
+    const gainToStop = musicGain;
+    gainToStop.gain.cancelScheduledValues(audioContext.currentTime);
+    gainToStop.gain.setValueAtTime(Math.max(gainToStop.gain.value, 0.0001), audioContext.currentTime);
+    gainToStop.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.2);
+    window.setTimeout(() => gainToStop.disconnect(), 260);
+  }
+
+  musicGain = null;
+}
+
+function toggleMusic() {
+  unlockAudio();
+  musicEnabled = !musicEnabled;
+  if (musicEnabled) {
+    startMusic();
+  } else {
+    stopMusic();
+  }
+  updateHud();
 }
 
 function updateEffects(delta) {
@@ -518,6 +617,7 @@ function unlockAudio() {
   if (audioContext.state === "suspended") {
     audioContext.resume();
   }
+  startMusic();
 }
 
 window.addEventListener("keydown", (event) => {
@@ -570,6 +670,10 @@ restartButton.addEventListener("click", () => {
   unlockAudio();
   resetGame();
   startGame();
+});
+
+musicButton.addEventListener("click", () => {
+  toggleMusic();
 });
 
 resetGame();

@@ -14,3 +14,4 @@ Open `index.html` in a browser.
 - Rush meter and temporary score multiplier
 - Obstacles that appear as the level rises
 - Keyboard and touch controls
+- Procedural synth background music with a toggle
