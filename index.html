@@ -1,73 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SerpentRush</title>
+    <title>SerpentRush 贪吃蛇冲刺</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <main class="app-shell">
-      <section class="game-stage" aria-label="SerpentRush game">
+      <section class="game-stage" aria-label="SerpentRush 游戏">
         <header class="top-bar">
           <div>
-            <p class="eyebrow">Arcade Snake</p>
+            <p class="eyebrow">街机贪吃蛇</p>
             <h1>SerpentRush</h1>
           </div>
-          <div class="status-pill" id="statusPill">Ready</div>
+          <div class="status-pill" id="statusPill">准备</div>
         </header>
 
         <div class="play-area">
-          <canvas id="gameCanvas" width="720" height="720" aria-label="Game board"></canvas>
+          <canvas id="gameCanvas" width="720" height="720" aria-label="游戏棋盘"></canvas>
           <div class="overlay" id="overlay">
             <div class="overlay-panel">
-              <p class="round-label" id="overlayLabel">Ready</p>
+              <p class="round-label" id="overlayLabel">准备</p>
               <h2 id="overlayTitle">SerpentRush</h2>
-              <p class="overlay-copy" id="overlayCopy">Collect bright fruit, chain combos, and survive the rush.</p>
-              <button class="primary-action" id="startButton" type="button">Start Run</button>
+              <p class="overlay-copy" id="overlayCopy">收集发光果实，叠加连击，在加速狂潮中坚持更久。</p>
+              <button class="primary-action" id="startButton" type="button">开始游戏</button>
             </div>
           </div>
         </div>
 
-        <div class="touch-pad" aria-label="Touch controls">
-          <button class="touch-button up" data-dir="up" type="button" aria-label="Move up">▲</button>
-          <button class="touch-button left" data-dir="left" type="button" aria-label="Move left">◀</button>
-          <button class="touch-button right" data-dir="right" type="button" aria-label="Move right">▶</button>
-          <button class="touch-button down" data-dir="down" type="button" aria-label="Move down">▼</button>
+        <div class="touch-pad" aria-label="触屏方向控制">
+          <button class="touch-button up" data-dir="up" type="button" aria-label="向上移动">▲</button>
+          <button class="touch-button left" data-dir="left" type="button" aria-label="向左移动">◀</button>
+          <button class="touch-button right" data-dir="right" type="button" aria-label="向右移动">▶</button>
+          <button class="touch-button down" data-dir="down" type="button" aria-label="向下移动">▼</button>
         </div>
       </section>
 
-      <aside class="side-panel" aria-label="Game stats">
+      <aside class="side-panel" aria-label="游戏数据">
         <div class="brand-block">
           <span class="brand-mark"></span>
           <div>
-            <p class="eyebrow">Live Run</p>
-            <h2>Rush Board</h2>
+            <p class="eyebrow">本局状态</p>
+            <h2>冲刺面板</h2>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <span>Score</span>
+            <span>分数</span>
             <strong id="scoreValue">0</strong>
           </div>
           <div class="stat-card">
-            <span>Best</span>
+            <span>最高</span>
             <strong id="bestValue">0</strong>
           </div>
           <div class="stat-card">
-            <span>Combo</span>
+            <span>连击</span>
             <strong id="comboValue">x1</strong>
           </div>
           <div class="stat-card">
-            <span>Level</span>
+            <span>等级</span>
             <strong id="levelValue">1</strong>
           </div>
         </div>
 
         <div class="meter-block">
           <div class="meter-head">
-            <span>Rush</span>
+            <span>冲刺能量</span>
             <strong id="rushLabel">0%</strong>
           </div>
           <div class="meter-track">
@@ -78,29 +78,29 @@
         <div class="inventory">
           <div class="item-line">
             <span class="legend-dot fruit"></span>
-            <span>Fruit</span>
+            <span>果实</span>
             <strong>+10</strong>
           </div>
           <div class="item-line">
             <span class="legend-dot spark"></span>
-            <span>Spark</span>
-            <strong>Rush</strong>
+            <span>电光</span>
+            <strong>冲刺</strong>
           </div>
           <div class="item-line">
             <span class="legend-dot prism"></span>
-            <span>Prism</span>
+            <span>棱晶</span>
             <strong>x2</strong>
           </div>
           <div class="item-line">
             <span class="legend-dot wall"></span>
-            <span>Block</span>
-            <strong>Avoid</strong>
+            <span>障碍</span>
+            <strong>避开</strong>
           </div>
         </div>
 
         <div class="actions">
-          <button id="pauseButton" type="button">Pause</button>
-          <button id="restartButton" type="button">Restart</button>
+          <button id="pauseButton" type="button">暂停</button>
+          <button id="restartButton" type="button">重开</button>
         </div>
       </aside>
     </main>

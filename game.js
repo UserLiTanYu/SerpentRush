@@ -90,7 +90,7 @@ function resetGame() {
   food = spawnItem("fruit");
   specialFood = null;
   updateHud();
-  showOverlay("Ready", "SerpentRush", "Collect bright fruit, chain combos, and survive the rush.", "Start Run");
+  showOverlay("准备", "SerpentRush", "收集发光果实，叠加连击，在加速狂潮中坚持更久。", "开始游戏");
 }
 
 function startGame() {
@@ -103,14 +103,14 @@ function startGame() {
   gameState = "running";
   lastTime = performance.now();
   hideOverlay();
-  updateStatus("Running");
+  updateStatus("进行中");
 }
 
 function pauseGame() {
   if (gameState === "running") {
     gameState = "paused";
-    showOverlay("Paused", "Breather", "Your run is waiting right where you left it.", "Resume");
-    updateStatus("Paused");
+    showOverlay("暂停", "稍作休整", "本局游戏会停在当前位置，准备好就继续冲刺。", "继续游戏");
+    updateStatus("已暂停");
   } else if (gameState === "paused") {
     startGame();
   }
@@ -121,8 +121,8 @@ function gameOver() {
   best = Math.max(best, score);
   saveBestScore(best);
   burst(snake[0], colors.fruit, 28);
-  showOverlay("Game Over", `${score} Points`, "One clean restart and the rush is yours again.", "Restart");
-  updateStatus("Crashed");
+  showOverlay("游戏结束", `${score} 分`, "再来一局，冲刺节奏马上就能找回来。", "重新开始");
+  updateStatus("撞到了");
   updateHud();
 }
 
@@ -149,7 +149,7 @@ function updateHud() {
   levelValue.textContent = level;
   rushLabel.textContent = `${Math.round(rush)}%`;
   rushMeter.style.width = `${Math.min(100, rush)}%`;
-  pauseButton.textContent = gameState === "paused" ? "Resume" : "Pause";
+  pauseButton.textContent = gameState === "paused" ? "继续" : "暂停";
 }
 
 function setDirection(name) {
