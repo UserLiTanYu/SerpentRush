@@ -22,7 +22,7 @@
 
 html,
 body {
-  min-height: 100%;
+  height: 100%;
 }
 
 body {
@@ -46,13 +46,14 @@ button {
 
 .app-shell {
   width: min(1440px, calc(100vw - 32px));
-  min-height: 100vh;
+  height: 100svh;
   margin: 0 auto;
-  padding: 16px 0;
+  padding: 10px 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 22px;
+  gap: 16px;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .game-stage,
@@ -64,8 +65,8 @@ button {
 
 .game-stage {
   border-radius: 8px;
-  min-height: calc(100vh - 32px);
-  padding: 18px 22px 22px;
+  height: calc(100svh - 20px);
+  padding: 12px 18px 16px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -84,7 +85,7 @@ button {
 .top-bar {
   position: relative;
   justify-content: center;
-  min-height: 58px;
+  min-height: 50px;
   padding: 2px 126px 0;
   text-align: center;
 }
@@ -110,11 +111,11 @@ h2 {
 }
 
 h1 {
-  font-size: 2.75rem;
+  font-size: clamp(2rem, 4.2vh, 2.5rem);
 }
 
 h2 {
-  font-size: 1.45rem;
+  font-size: 1.32rem;
 }
 
 .status-pill {
@@ -134,9 +135,10 @@ h2 {
 
 .play-area {
   position: relative;
-  width: min(100%, calc((100vh - 118px) * 1.333), 1120px);
+  width: min(100%, calc((100svh - 98px) * 1.333), 1120px);
+  max-height: calc(100svh - 98px);
   aspect-ratio: 4 / 3;
-  margin: 6px auto 0;
+  margin: 4px auto 0;
   overflow: hidden;
   border-radius: 8px;
   background: var(--ink);
@@ -187,6 +189,43 @@ canvas {
   margin: 14px 0 20px;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.round-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+
+.round-summary.is-hidden {
+  display: none;
+}
+
+.summary-item {
+  min-width: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(11, 13, 16, 0.36);
+  padding: 10px;
+  text-align: left;
+}
+
+.summary-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.summary-item strong {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .help-modal {
@@ -284,21 +323,22 @@ canvas {
 
 .side-panel {
   border-radius: 8px;
-  min-height: calc(100vh - 32px);
-  padding: 16px;
+  height: calc(100svh - 20px);
+  min-height: 0;
+  padding: 12px;
   display: flex;
   flex-direction: column;
 }
 
 .brand-block {
   justify-content: flex-start;
-  padding-bottom: 18px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
 
 .brand-mark {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
   border-radius: 8px;
   background:
@@ -310,13 +350,13 @@ canvas {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 18px 0;
+  gap: 8px;
+  margin: 12px 0;
 }
 
 .stat-card {
-  min-height: 78px;
-  padding: 12px;
+  min-height: 64px;
+  padding: 10px;
   border-radius: 8px;
   background: var(--panel-strong);
   border: 1px solid var(--line);
@@ -337,7 +377,7 @@ canvas {
   display: block;
   max-width: 100%;
   overflow: hidden;
-  font-size: 1.58rem;
+  font-size: 1.34rem;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   text-overflow: ellipsis;
@@ -346,15 +386,15 @@ canvas {
 
 .meter-block,
 .inventory {
-  padding: 14px;
+  padding: 10px;
   border-radius: 8px;
   background: var(--panel-strong);
   border: 1px solid var(--line);
 }
 
 .meter-track {
-  height: 12px;
-  margin-top: 12px;
+  height: 10px;
+  margin-top: 9px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
@@ -369,12 +409,36 @@ canvas {
   transition: width 140ms ease;
 }
 
+.rush-cue {
+  min-height: 28px;
+  margin-top: 9px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.meter-block.is-ready {
+  border-color: rgba(255, 209, 102, 0.58);
+  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.12), 0 14px 34px rgba(255, 209, 102, 0.08);
+}
+
+.meter-block.is-ready .rush-cue {
+  background: linear-gradient(90deg, var(--gold), var(--coral));
+  color: #160e0d;
+  box-shadow: 0 10px 24px rgba(255, 209, 102, 0.2);
+}
+
 .inventory {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .item-line {
-  min-height: 34px;
+  min-height: 30px;
   display: grid;
   grid-template-columns: 14px 1fr auto;
   gap: 10px;
@@ -383,6 +447,43 @@ canvas {
 
 .item-line + .item-line {
   border-top: 1px solid var(--line);
+}
+
+.tooltip-row {
+  position: relative;
+  outline: 0;
+}
+
+.tooltip-row:hover,
+.tooltip-row:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tooltip-row::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 4;
+  width: min(240px, calc(100vw - 48px));
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(11, 13, 16, 0.96);
+  color: var(--text);
+  content: attr(data-tooltip);
+  line-height: 1.5;
+  padding: 10px 12px;
+  box-shadow: 0 14px 34px var(--shadow);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  visibility: hidden;
+}
+
+.tooltip-row:hover::after,
+.tooltip-row:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .item-line strong {
@@ -414,9 +515,10 @@ canvas {
 
 .actions {
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 10px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .actions button {
@@ -473,15 +575,20 @@ canvas {
 
 @media (max-width: 940px) {
   .app-shell {
+    height: auto;
+    min-height: 100svh;
     grid-template-columns: 1fr;
     align-items: start;
+    overflow: visible;
   }
 
   .game-stage {
+    height: auto;
     min-height: auto;
   }
 
   .side-panel {
+    height: auto;
     min-height: auto;
     order: -1;
   }
@@ -539,6 +646,15 @@ canvas {
 
   .stat-card strong {
     font-size: 1rem;
+  }
+
+  .round-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .tooltip-row::after {
+    left: 0;
+    right: auto;
   }
 
   .help-panel {

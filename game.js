@@ -8,10 +8,13 @@ const levelValue = document.querySelector("#levelValue");
 const statusPill = document.querySelector("#statusPill");
 const rushLabel = document.querySelector("#rushLabel");
 const rushMeter = document.querySelector("#rushMeter");
+const meterBlock = document.querySelector(".meter-block");
+const rushCue = document.querySelector("#rushCue");
 const overlay = document.querySelector("#overlay");
 const overlayLabel = document.querySelector("#overlayLabel");
 const overlayTitle = document.querySelector("#overlayTitle");
 const overlayCopy = document.querySelector("#overlayCopy");
+const roundSummary = document.querySelector("#roundSummary");
 const startButton = document.querySelector("#startButton");
 const helpButton = document.querySelector("#helpButton");
 const helpModal = document.querySelector("#helpModal");
@@ -70,6 +73,12 @@ let musicTimer;
 let musicNextTime;
 let musicStep;
 let helpPreviousState;
+let roundElapsed;
+let maxCombo;
+let maxLevel;
+let fruitCount;
+let sparkCount;
+let prismCount;
 
 function readBestScore() {
   return Number(localStorage.getItem("serpentRushBest") || "0");
@@ -95,6 +104,12 @@ function resetGame() {
   rush = 0;
   multiplierTicks = 0;
   moveTimer = 0;
+  roundElapsed = 0;
+  maxCombo = 1;
+  maxLevel = 1;
+  fruitCount = 0;
+  sparkCount = 0;
+  prismCount = 0;
   lastTime = performance.now();
   gameState = "ready";
   particles = [];
@@ -138,7 +153,7 @@ function gameOver() {
   best = Math.max(best, score);
   saveBestScore(best);
   burst(snake[0], colors.fruit, 28);
-  showOverlay("游戏结束", `${score} 分`, "再来一局，冲刺节奏马上就能找回来。", "重新开始");
+  showGameOverOverlay();
   updateStatus("撞到了");
   updateHud();
 }
@@ -147,7 +162,37 @@ function showOverlay(label, title, copy, buttonText) {
   overlayLabel.textContent = label;
   overlayTitle.textContent = title;
   overlayCopy.textContent = copy;
+  roundSummary.classList.add("is-hidden");
+  roundSummary.replaceChildren();
   startButton.textContent = buttonText;
+  overlay.classList.remove("is-hidden");
+}
+
+function showGameOverOverlay() {
+  const summaryItems = [
+    ["最高连击", `x${formatCombo(maxCombo)}`],
+    ["吃到果实", fruitCount],
+    ["最高等级", maxLevel],
+    ["存活时间", formatDuration(roundElapsed)],
+    ["电光", sparkCount],
+    ["棱晶", prismCount]
+  ];
+
+  overlayLabel.textContent = "游戏结束";
+  overlayTitle.textContent = `${score} 分`;
+  overlayCopy.textContent = "本局表现已经记录，看看哪一项还能再往上冲。";
+  roundSummary.replaceChildren(...summaryItems.map(([label, value]) => {
+    const item = document.createElement("div");
+    const itemLabel = document.createElement("span");
+    const itemValue = document.createElement("strong");
+    item.className = "summary-item";
+    itemLabel.textContent = label;
+    itemValue.textContent = value;
+    item.append(itemLabel, itemValue);
+    return item;
+  }));
+  roundSummary.classList.remove("is-hidden");
+  startButton.textContent = "重新开始";
   overlay.classList.remove("is-hidden");
 }
 
@@ -160,16 +205,35 @@ function updateStatus(text) {
 }
 
 function updateHud() {
-  const activeCombo = combo * (multiplierTicks > 0 ? 2 : 1);
-  const comboText = activeCombo.toFixed(1).replace(/\.0$/, "");
+  const comboText = formatCombo(getActiveCombo());
   scoreValue.textContent = score;
   bestValue.textContent = Math.max(best, score);
   comboValue.textContent = `x${comboText}`;
   levelValue.textContent = level;
   rushLabel.textContent = `${Math.round(rush)}%`;
   rushMeter.style.width = `${Math.min(100, rush)}%`;
+  meterBlock.classList.toggle("is-ready", rush >= 100);
+  rushCue.textContent = rush >= 100 ? "冲刺已启动：速度提升" : "收集道具充能";
   pauseButton.textContent = gameState === "paused" ? "继续" : "暂停";
   musicButton.textContent = musicEnabled ? "音乐 开" : "音乐 关";
+}
+
+function getActiveCombo() {
+  return combo * (multiplierTicks > 0 ? 2 : 1);
+}
+
+function formatCombo(value) {
+  return value.toFixed(1).replace(/\.0$/, "");
+}
+
+function formatDuration(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes <= 0) {
+    return `${seconds} 秒`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 function setDirection(name) {
@@ -262,6 +326,7 @@ function moveSnake() {
   }
 
   level = Math.max(1, Math.floor(score / 80) + 1);
+  maxLevel = Math.max(maxLevel, level);
   if (level >= 2) {
     spawnObstaclePack();
   }
@@ -292,6 +357,16 @@ function collectFood(item, type) {
   if (type === "prism") {
     multiplierTicks = 50;
   }
+
+  if (type === "fruit") {
+    fruitCount += 1;
+  } else if (type === "spark") {
+    sparkCount += 1;
+  } else if (type === "prism") {
+    prismCount += 1;
+  }
+
+  maxCombo = Math.max(maxCombo, getActiveCombo());
 
   const color = type === "fruit" ? colors.fruit : type === "spark" ? colors.spark : colors.prism;
   burst(item, color, type === "fruit" ? 14 : 24);
@@ -639,6 +714,7 @@ function tick(time) {
   lastTime = time;
 
   if (gameState === "running") {
+    roundElapsed += delta;
     moveTimer += delta;
     if (moveTimer >= nextStepInterval()) {
       moveTimer = 0;
