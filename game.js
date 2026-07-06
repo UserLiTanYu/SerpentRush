@@ -17,8 +17,9 @@ const pauseButton = document.querySelector("#pauseButton");
 const restartButton = document.querySelector("#restartButton");
 const musicButton = document.querySelector("#musicButton");
 
-const boardSize = 24;
-const cellSize = canvas.width / boardSize;
+const boardColumns = 32;
+const boardRows = 24;
+const cellSize = Math.min(canvas.width / boardColumns, canvas.height / boardRows);
 const directions = {
   up: { x: 0, y: -1 },
   down: { x: 0, y: 1 },
@@ -76,9 +77,9 @@ function saveBestScore(value) {
 function resetGame() {
   stopMusic();
   snake = [
-    { x: 8, y: 12 },
-    { x: 7, y: 12 },
-    { x: 6, y: 12 }
+    { x: 10, y: 12 },
+    { x: 9, y: 12 },
+    { x: 8, y: 12 }
   ];
   direction = directions.right;
   nextDirection = directions.right;
@@ -191,8 +192,8 @@ function spawnItem(type) {
   let point;
   do {
     point = {
-      x: Math.floor(Math.random() * boardSize),
-      y: Math.floor(Math.random() * boardSize),
+      x: Math.floor(Math.random() * boardColumns),
+      y: Math.floor(Math.random() * boardRows),
       type
     };
   } while (isOccupied(point));
@@ -225,8 +226,8 @@ function moveSnake() {
   };
 
   if (
-    head.x < 0 || head.x >= boardSize ||
-    head.y < 0 || head.y >= boardSize ||
+    head.x < 0 || head.x >= boardColumns ||
+    head.y < 0 || head.y >= boardRows ||
     snake.some((part, index) => index > 0 && part.x === head.x && part.y === head.y) ||
     obstacles.some((block) => block.x === head.x && block.y === head.y)
   ) {
@@ -447,8 +448,8 @@ function drawBoard() {
   ctx.fillStyle = colors.boardA;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let y = 0; y < boardSize; y += 1) {
-    for (let x = 0; x < boardSize; x += 1) {
+  for (let y = 0; y < boardRows; y += 1) {
+    for (let x = 0; x < boardColumns; x += 1) {
       if ((x + y) % 2 === 0) {
         ctx.fillStyle = colors.boardB;
         ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -458,12 +459,16 @@ function drawBoard() {
 
   ctx.strokeStyle = colors.grid;
   ctx.lineWidth = 1;
-  for (let i = 0; i <= boardSize; i += 1) {
+  for (let i = 0; i <= boardColumns; i += 1) {
     const p = i * cellSize;
     ctx.beginPath();
     ctx.moveTo(p, 0);
     ctx.lineTo(p, canvas.height);
     ctx.stroke();
+  }
+
+  for (let i = 0; i <= boardRows; i += 1) {
+    const p = i * cellSize;
     ctx.beginPath();
     ctx.moveTo(0, p);
     ctx.lineTo(canvas.width, p);

@@ -84,8 +84,8 @@ button {
 .top-bar {
   position: relative;
   justify-content: center;
-  min-height: 82px;
-  padding: 4px 126px 0;
+  min-height: 58px;
+  padding: 2px 126px 0;
   text-align: center;
 }
 
@@ -110,7 +110,7 @@ h2 {
 }
 
 h1 {
-  font-size: 3.65rem;
+  font-size: 2.75rem;
 }
 
 h2 {
@@ -134,9 +134,9 @@ h2 {
 
 .play-area {
   position: relative;
-  width: min(100%, calc(100vh - 152px), 860px);
-  aspect-ratio: 1;
-  margin: 10px auto 0;
+  width: min(100%, calc((100vh - 118px) * 1.333), 1120px);
+  aspect-ratio: 4 / 3;
+  margin: 6px auto 0;
   overflow: hidden;
   border-radius: 8px;
   background: var(--ink);
@@ -401,7 +401,7 @@ canvas {
   }
 
   .play-area {
-    width: min(100%, 78vh, 760px);
+    width: min(100%, 82vh, 920px);
   }
 
   .touch-pad {
@@ -422,12 +422,12 @@ canvas {
   }
 
   .top-bar {
-    min-height: 86px;
+    min-height: 74px;
     padding: 8px 90px 0;
   }
 
   h1 {
-    font-size: 2.35rem;
+    font-size: 2rem;
   }
 
   .status-pill {
