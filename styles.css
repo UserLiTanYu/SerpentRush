@@ -27,10 +27,8 @@ body {
 
 body {
   margin: 0;
-  background:
-    linear-gradient(135deg, rgba(92, 242, 139, 0.1), transparent 34%),
-    linear-gradient(315deg, rgba(255, 107, 107, 0.08), transparent 42%),
-    var(--bg);
+  overflow: hidden;
+  background: var(--bg);
   color: var(--text);
   font-family:
     Inter, "Microsoft YaHei", "PingFang SC", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -45,7 +43,9 @@ button {
 }
 
 .app-shell {
-  width: min(1440px, calc(100vw - 32px));
+  position: relative;
+  z-index: 1;
+  width: min(1680px, calc(100vw - 32px));
   height: 100svh;
   margin: 0 auto;
   padding: 10px 0;
@@ -59,8 +59,7 @@ button {
 .game-stage,
 .side-panel {
   border: 1px solid var(--line);
-  background: rgba(25, 28, 33, 0.9);
-  box-shadow: 0 24px 70px var(--shadow);
+  box-shadow: 0 24px 70px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .game-stage {
@@ -70,6 +69,14 @@ button {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at 11% 14%, rgba(92, 242, 139, 0.16), transparent 18%),
+    radial-gradient(circle at 88% 18%, rgba(77, 215, 255, 0.12), transparent 20%),
+    linear-gradient(90deg, rgba(92, 242, 139, 0.1) 0 2px, transparent 2px 28px),
+    linear-gradient(180deg, rgba(77, 215, 255, 0.08) 0 2px, transparent 2px 28px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.04) 50% 75%, transparent 75%),
+    linear-gradient(180deg, rgba(31, 36, 45, 0.97), rgba(10, 13, 20, 0.99));
+  background-size: auto, auto, 28px 28px, 28px 28px, 18px 18px, auto;
 }
 
 .top-bar,
@@ -135,9 +142,9 @@ h2 {
 
 .play-area {
   position: relative;
-  width: min(100%, calc((100svh - 98px) * 1.333), 1120px);
+  width: min(100%, calc((100svh - 98px) * 1.667), 1280px);
   max-height: calc(100svh - 98px);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 5 / 3;
   margin: 4px auto 0;
   overflow: hidden;
   border-radius: 8px;
@@ -328,6 +335,11 @@ canvas {
   padding: 12px;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(255, 209, 102, 0.16), transparent 28%),
+    radial-gradient(circle at 10% 92%, rgba(169, 139, 255, 0.13), transparent 30%),
+    repeating-linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg, rgba(30, 35, 45, 0.98), rgba(14, 17, 24, 0.98));
 }
 
 .brand-block {
@@ -407,30 +419,6 @@ canvas {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--green), var(--gold), var(--coral));
   transition: width 140ms ease;
-}
-
-.rush-cue {
-  min-height: 28px;
-  margin-top: 9px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-weight: 900;
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-
-.meter-block.is-ready {
-  border-color: rgba(255, 209, 102, 0.58);
-  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.12), 0 14px 34px rgba(255, 209, 102, 0.08);
-}
-
-.meter-block.is-ready .rush-cue {
-  background: linear-gradient(90deg, var(--gold), var(--coral));
-  color: #160e0d;
-  box-shadow: 0 10px 24px rgba(255, 209, 102, 0.2);
 }
 
 .inventory {
@@ -574,6 +562,10 @@ canvas {
 }
 
 @media (max-width: 940px) {
+  body {
+    overflow: auto;
+  }
+
   .app-shell {
     height: auto;
     min-height: 100svh;

@@ -8,8 +8,6 @@ const levelValue = document.querySelector("#levelValue");
 const statusPill = document.querySelector("#statusPill");
 const rushLabel = document.querySelector("#rushLabel");
 const rushMeter = document.querySelector("#rushMeter");
-const meterBlock = document.querySelector(".meter-block");
-const rushCue = document.querySelector("#rushCue");
 const overlay = document.querySelector("#overlay");
 const overlayLabel = document.querySelector("#overlayLabel");
 const overlayTitle = document.querySelector("#overlayTitle");
@@ -24,7 +22,7 @@ const pauseButton = document.querySelector("#pauseButton");
 const restartButton = document.querySelector("#restartButton");
 const musicButton = document.querySelector("#musicButton");
 
-const boardColumns = 32;
+const boardColumns = 40;
 const boardRows = 24;
 const cellSize = Math.min(canvas.width / boardColumns, canvas.height / boardRows);
 const directions = {
@@ -91,9 +89,9 @@ function saveBestScore(value) {
 function resetGame() {
   stopMusic();
   snake = [
-    { x: 10, y: 12 },
-    { x: 9, y: 12 },
-    { x: 8, y: 12 }
+    { x: 14, y: 12 },
+    { x: 13, y: 12 },
+    { x: 12, y: 12 }
   ];
   direction = directions.right;
   nextDirection = directions.right;
@@ -212,8 +210,6 @@ function updateHud() {
   levelValue.textContent = level;
   rushLabel.textContent = `${Math.round(rush)}%`;
   rushMeter.style.width = `${Math.min(100, rush)}%`;
-  meterBlock.classList.toggle("is-ready", rush >= 100);
-  rushCue.textContent = rush >= 100 ? "冲刺已启动：速度提升" : "收集道具充能";
   pauseButton.textContent = gameState === "paused" ? "继续" : "暂停";
   musicButton.textContent = musicEnabled ? "音乐 开" : "音乐 关";
 }
