@@ -1,0 +1,17 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Logs and local environment
+*.log
+.env
+.env.*
+
+# Dependency/build output, in case the project grows later
+node_modules/
+dist/
+build/
+coverage/
