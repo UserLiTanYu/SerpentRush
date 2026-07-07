@@ -90,8 +90,7 @@ SerpentRush/
 │   ├── ui.js           # UI 管理（HUD、覆盖层、弹窗、主题切换）
 │   ├── input.js        # 触屏方向输入
 │   └── main.js         # 入口：DOM 引用、游戏流程编排、事件绑定、初始化
-├── build/
-│   └── bundle.js       # 构建脚本，将 src/ 下模块打包为 game.js
+├── bundle.js           # 构建脚本，将 src/ 下模块打包为 game.js
 ├── assets/             # README 展示图片
 ├── README.md           # 项目说明
 └── .gitignore          # Git 忽略规则
@@ -102,7 +101,7 @@ SerpentRush/
 源代码使用 ES 模块组织在 `src/` 和 `css/` 目录下。修改源代码后，运行以下命令重新打包：
 
 ```bash
-node build/bundle.js
+node bundle.js
 ```
 
 打包后的 `game.js` 可直接通过 `file://` 协议在浏览器中运行，无需本地服务器。
