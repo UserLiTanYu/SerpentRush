@@ -30,6 +30,38 @@
     SPEED_PER_LEVEL: 9,
     SPEED_REDUCTION_CAP: 72,
     MIN_INTERVAL: 54,
+    DIFFICULTIES: {
+      easy: {
+        name: "简单",
+        badge: "休闲",
+        baseInterval: 180,
+        speedPerLevel: 6,
+        obstacleStartLevel: 3,
+        obstacleOffset: -2,
+        specialSpawnMultiplier: 1.5,
+        comboDecay: 0.01,
+      },
+      normal: {
+        name: "普通",
+        badge: "标准",
+        baseInterval: 150,
+        speedPerLevel: 9,
+        obstacleStartLevel: 2,
+        obstacleOffset: 0,
+        specialSpawnMultiplier: 1.0,
+        comboDecay: 0.015,
+      },
+      hard: {
+        name: "困难",
+        badge: "硬核",
+        baseInterval: 120,
+        speedPerLevel: 12,
+        obstacleStartLevel: 1,
+        obstacleOffset: 2,
+        specialSpawnMultiplier: 0.7,
+        comboDecay: 0.02,
+      },
+    },
     PARTICLE_FRUIT_COUNT: 14,
     PARTICLE_SPECIAL_COUNT: 28,
     PARTICLE_GAMEOVER_COUNT: 28,
@@ -177,6 +209,8 @@
   const startButton = document.querySelector("#startButton");
   const helpButton = document.querySelector("#helpButton");
   const helpModal = document.querySelector("#helpModal");
+  const difficultySelector = document.querySelector("#difficultySelector");
+  const diffBadge = document.querySelector("#diffBadge");
   const closeHelpButton = document.querySelector("#closeHelpButton");
   const confirmHelpButton = document.querySelector("#confirmHelpButton");
   const pauseButton = document.querySelector("#pauseButton");
@@ -218,12 +252,12 @@
     return state.combo * (state.multiplierTicks > 0 ? 2 : 1);
   }
 
-  function readBestScore() {
-    return Number(localStorage.getItem("serpentRushBest") || "0");
+  function readBestScore(difficulty) {
+    return Number(localStorage.getItem("serpentRushBest_" + difficulty) || "0");
   }
 
-  function saveBestScore(value) {
-    localStorage.setItem("serpentRushBest", String(value));
+  function saveBestScore(value, difficulty) {
+    localStorage.setItem("serpentRushBest_" + difficulty, String(value));
   }
 
   function loadBgPreferences(state) {
@@ -291,6 +325,7 @@
       this.fruitCount = 0;
       this.sparkCount = 0;
       this.prismCount = 0;
+      this.difficulty = "normal";
       this.achievements = loadAchievements();
       this.achievementsNew = [];
       this.everRushed = false;
@@ -325,7 +360,7 @@
       this.state = "ready";
       this.particles = [];
       this.floatingTexts = [];
-      this.best = readBestScore();
+      this.best = readBestScore(this.difficulty);
       this.food = spawnItem(this, "fruit");
       this.specialFood = null;
     }
@@ -811,6 +846,9 @@
     roundSummary.classList.add("is-hidden");
     roundSummary.replaceChildren();
     startButton.textContent = buttonText;
+    if (difficultySelector) {
+      difficultySelector.classList.toggle("is-hidden", label !== "准备");
+    }
     overlay.classList.remove("is-hidden");
   }
 
@@ -839,6 +877,9 @@
     }));
     roundSummary.classList.remove("is-hidden");
     startButton.textContent = "重新开始";
+    if (difficultySelector) {
+      difficultySelector.classList.remove("is-hidden");
+    }
     overlay.classList.remove("is-hidden");
   }
 
@@ -983,7 +1024,8 @@
 
   // ===== GAME LOGIC =====
   function spawnObstaclePack() {
-    const targetCount = Math.min(CONFIG.OBSTACLE_MAX, CONFIG.OBSTACLE_BASE + state.level * CONFIG.OBSTACLE_PER_LEVEL);
+    const diff = CONFIG.DIFFICULTIES[state.difficulty];
+    const targetCount = Math.min(CONFIG.OBSTACLE_MAX, CONFIG.OBSTACLE_BASE + state.level * CONFIG.OBSTACLE_PER_LEVEL + diff.obstacleOffset);
     while (state.obstacles.length < targetCount) {
       const block = spawnItem(state, "wall");
       const nearHead = Math.abs(block.x - state.snake[0].x) + Math.abs(block.y - state.snake[0].y) < CONFIG.OBSTACLE_SAFE_DISTANCE;
@@ -994,7 +1036,8 @@
   }
 
   function nextStepInterval() {
-    const base = CONFIG.BASE_INTERVAL - Math.min(CONFIG.SPEED_REDUCTION_CAP, (state.level - 1) * CONFIG.SPEED_PER_LEVEL);
+    const diff = CONFIG.DIFFICULTIES[state.difficulty];
+    const base = diff.baseInterval - Math.min(CONFIG.SPEED_REDUCTION_CAP, (state.level - 1) * diff.speedPerLevel);
     const rushBoost = state.rush >= 100 ? CONFIG.RUSH_SPEED_BOOST : 0;
     return Math.max(CONFIG.MIN_INTERVAL, base - rushBoost);
   }
@@ -1068,17 +1111,17 @@
 
     if (!grew) {
       state.snake.pop();
-      state.combo = Math.max(1, state.combo - CONFIG.COMBO_DECAY);
+      state.combo = Math.max(1, state.combo - CONFIG.DIFFICULTIES[state.difficulty].comboDecay);
       state.rush = Math.max(0, state.rush - CONFIG.RUSH_DECAY);
     }
 
     state.level = Math.max(1, Math.floor(state.score / CONFIG.SCORE_PER_LEVEL) + 1);
     state.maxLevel = Math.max(state.maxLevel, state.level);
-    if (state.level >= CONFIG.OBSTACLE_START_LEVEL) {
+    if (state.level >= CONFIG.DIFFICULTIES[state.difficulty].obstacleStartLevel) {
       spawnObstaclePack();
     }
 
-    if (!state.specialFood && Math.random() < CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) {
+    if (!state.specialFood && Math.random() < (CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) * CONFIG.DIFFICULTIES[state.difficulty].specialSpawnMultiplier) {
       state.specialFood = spawnItem(state, Math.random() < CONFIG.SPECIAL_SPARK_CHANCE ? "spark" : "prism");
     }
 
@@ -1090,11 +1133,34 @@
     updateHud();
   }
 
+  function getDifficultyTitle() {
+    if (state.difficulty === "easy") return "SerpentRush · 休闲模式";
+    if (state.difficulty === "hard") return "SerpentRush · 硬核模式";
+    return "SerpentRush · 标准模式";
+  }
+
+  function setDifficulty(name) {
+    if (!CONFIG.DIFFICULTIES[name]) return;
+    state.difficulty = name;
+    state.best = readBestScore(name);
+    updateHud();
+    if (diffBadge) {
+      diffBadge.textContent = CONFIG.DIFFICULTIES[name].badge;
+      diffBadge.className = "diff-badge diff-badge--" + name;
+    }
+    if (state.state === "ready" || state.state === "paused") {
+      var titleEl = document.querySelector("#overlayTitle");
+      if (titleEl && !overlay.classList.contains("is-hidden")) {
+        titleEl.textContent = getDifficultyTitle();
+      }
+    }
+  }
+
   function resetGame() {
     stopMusic();
     state.reset();
     updateHud();
-    showOverlay("准备", "SerpentRush", "收集发光果实，叠加连击，在加速狂潮中坚持更久。", "开始游戏");
+    showOverlay("准备", getDifficultyTitle(), "收集发光果实，叠加连击，在加速狂潮中坚持更久。", "开始游戏");
   }
 
   function startGame() {
@@ -1126,7 +1192,7 @@
     state.state = "gameover";
     stopMusic();
     state.best = Math.max(state.best, state.score);
-    saveBestScore(state.best);
+    saveBestScore(state.best, state.difficulty);
     burst(state.snake[0], COLORS.fruit, CONFIG.PARTICLE_GAMEOVER_COUNT);
     showGameOverOverlay();
     updateStatus("撞到了");
@@ -1250,11 +1316,35 @@
     });
   });
 
+  if (difficultySelector) {
+    difficultySelector.addEventListener("click", function (event) {
+      var btn = event.target.closest(".diff-btn");
+      if (!btn) return;
+      var diffName = btn.dataset.diff;
+      if (!diffName) return;
+
+      difficultySelector.querySelectorAll(".diff-btn").forEach(function (b) {
+        b.classList.remove("is-active");
+      });
+      btn.classList.add("is-active");
+      difficultySelector.setAttribute("data-active", diffName);
+
+      setDifficulty(diffName);
+    });
+  }
+
   // ===== INIT =====
   resetGame();
   loadBgPreferences(state);
   applyShellBackground();
   applyBoardBackground();
   updateAchieveCount();
+  if (diffBadge) {
+    diffBadge.textContent = "标准";
+    diffBadge.className = "diff-badge diff-badge--normal";
+  }
+  if (difficultySelector) {
+    difficultySelector.setAttribute("data-active", "normal");
+  }
   requestAnimationFrame(tick);
 })();

@@ -14,6 +14,7 @@
             <h1>SerpentRush</h1>
           </div>
           <div class="status-pill" id="statusPill">准备</div>
+          <div class="diff-badge" id="diffBadge">标准</div>
         </header>
 
         <div class="play-area">
@@ -24,6 +25,23 @@
               <h2 id="overlayTitle">SerpentRush</h2>
               <p class="overlay-copy" id="overlayCopy">收集发光果实，叠加连击，在加速狂潮中坚持更久。</p>
               <div class="round-summary is-hidden" id="roundSummary"></div>
+              <div class="difficulty-selector" id="difficultySelector">
+                <span class="difficulty-label">选择难度</span>
+                <div class="difficulty-options">
+                  <button class="diff-btn" data-diff="easy" type="button">
+                    <span class="diff-name">简单</span>
+                    <span class="diff-desc">慢速 / 少障碍</span>
+                  </button>
+                  <button class="diff-btn is-active" data-diff="normal" type="button">
+                    <span class="diff-name">普通</span>
+                    <span class="diff-desc">标准体验</span>
+                  </button>
+                  <button class="diff-btn" data-diff="hard" type="button">
+                    <span class="diff-name">困难</span>
+                    <span class="diff-desc">快速 / 多障碍</span>
+                  </button>
+                </div>
+              </div>
               <button class="primary-action" id="startButton" type="button">开始游戏</button>
             </div>
           </div>
