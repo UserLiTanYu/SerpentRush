@@ -1,17 +1,44 @@
 # SerpentRush
 
-A polished browser-based snake game built with plain HTML, CSS, and JavaScript.
+SerpentRush 是一款使用原生 HTML、CSS 和 JavaScript 制作的浏览器贪吃蛇小游戏。游戏在经典贪吃蛇规则上加入了霓虹视觉、连击得分、冲刺能量、特殊道具和动态障碍，让每一局都更有节奏感和挑战性。
 
-## Play
+## 游戏玩法
 
-Open `index.html` in a browser.
+打开 `index.html` 即可开始游戏。玩家需要控制小蛇在棋盘中移动，收集发光果实来获得分数并让蛇身变长。随着分数提升，等级会逐渐升高，移动速度加快，棋盘上也会出现更多障碍物。
 
-## Features
+游戏目标是在不撞到墙壁、自身或障碍物的前提下尽可能获得更高分数。
 
-- Smooth canvas rendering
-- Score, best score, combo, and level tracking
-- Fruit, spark, and prism pickups
-- Rush meter and temporary score multiplier
-- Obstacles that appear as the level rises
-- Keyboard and touch controls
-- Procedural synth background music with a toggle
+## 操作方式
+
+- 键盘方向键或 `WASD`：控制移动方向
+- 空格键：暂停或继续游戏
+- 触屏方向按钮：适配移动端操作
+- 音乐按钮：开启或关闭背景音乐
+- 换背景按钮：切换主界面背景和游戏棋盘背景
+
+## 游戏特色
+
+- 平滑的 Canvas 绘制效果和霓虹风格界面
+- 分数、最高分、连击倍率和等级实时显示
+- 普通果实、闪电道具和棱晶道具带来不同收益
+- 冲刺能量充满后进入更快节奏
+- 棱晶道具可短时间触发得分翻倍
+- 等级提升后自动生成障碍物，增加挑战
+- 支持键盘和触屏操作
+- 内置程序化合成器背景音乐
+- 支持切换主背景和棋盘背景
+
+## 项目结构
+
+```text
+SerpentRush/
+├── index.html      # 游戏页面结构
+├── styles.css      # 界面样式与响应式布局
+├── game.js         # 游戏逻辑、绘制、音效和交互
+├── README.md       # 项目说明
+└── .gitignore      # Git 忽略规则
+```
+
+## 运行方式
+
+直接用浏览器打开 `index.html` 文件即可运行，不需要安装依赖或启动服务器。
