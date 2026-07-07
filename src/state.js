@@ -1,10 +1,12 @@
 import { CONFIG, DIRECTIONS } from "./config.js";
 
 function isOccupied(state, point) {
-  return state.snake.some((part) => part.x === point.x && part.y === point.y)
-    || state.obstacles.some((block) => block.x === point.x && block.y === point.y)
-    || (state.food && state.food.x === point.x && state.food.y === point.y)
-    || (state.specialFood && state.specialFood.x === point.x && state.specialFood.y === point.y);
+  return !!(
+    state.snake.some((part) => part.x === point.x && part.y === point.y) ||
+    state.obstacles.some((block) => block.x === point.x && block.y === point.y) ||
+    (state.food && state.food.x === point.x && state.food.y === point.y) ||
+    (state.specialFood && state.specialFood.x === point.x && state.specialFood.y === point.y)
+  );
 }
 
 function spawnItem(state, type) {
@@ -53,7 +55,7 @@ function saveBoardBg(index) {
 function loadAchievements() {
   try {
     return JSON.parse(localStorage.getItem("serpentRushAchievements") || "{}");
-  } catch (e) {
+  } catch {
     return {};
   }
 }
@@ -151,5 +153,5 @@ export {
   loadAchievements,
   saveAchievements,
   GameState,
-  state,
+  state
 };

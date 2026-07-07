@@ -35,7 +35,7 @@ const CONFIG = {
       obstacleStartLevel: 3,
       obstacleOffset: -2,
       specialSpawnMultiplier: 1.5,
-      comboDecay: 0.01,
+      comboDecay: 0.01
     },
     normal: {
       name: "普通",
@@ -45,7 +45,7 @@ const CONFIG = {
       obstacleStartLevel: 2,
       obstacleOffset: 0,
       specialSpawnMultiplier: 1.0,
-      comboDecay: 0.015,
+      comboDecay: 0.015
     },
     hard: {
       name: "困难",
@@ -55,8 +55,8 @@ const CONFIG = {
       obstacleStartLevel: 1,
       obstacleOffset: 2,
       specialSpawnMultiplier: 0.7,
-      comboDecay: 0.02,
-    },
+      comboDecay: 0.02
+    }
   },
   PARTICLE_FRUIT_COUNT: 14,
   PARTICLE_SPECIAL_COUNT: 28,
@@ -65,22 +65,29 @@ const CONFIG = {
   TONE_SPARK_HZ: 580,
   TONE_PRISM_HZ: 720,
   MUSIC_BPM: 126,
-  MUSIC_SCHEDULE_INTERVAL: 260,
+  MUSIC_SCHEDULE_INTERVAL: 260
 };
 
 const ACHIEVEMENTS = [
-  { id: "first_score",  name: "初出茅庐", desc: "单局首次达到 50 分", icon: "⭐", color: "#5cf28b", category: "入门" },
-  { id: "first_combo",  name: "连击入门", desc: "单局连击达到 x3", icon: "🔥", color: "#ffd166", category: "入门" },
-  { id: "first_rush",   name: "冲刺初体验", desc: "首次触发冲刺状态", icon: "⚡", color: "#4dd7ff", category: "入门" },
+  { id: "first_score", name: "初出茅庐", desc: "单局首次达到 50 分", icon: "⭐", color: "#5cf28b", category: "入门" },
+  { id: "first_combo", name: "连击入门", desc: "单局连击达到 x3", icon: "🔥", color: "#ffd166", category: "入门" },
+  { id: "first_rush", name: "冲刺初体验", desc: "首次触发冲刺状态", icon: "⚡", color: "#4dd7ff", category: "入门" },
   { id: "combo_master", name: "连击大师", desc: "单局连击达到 x6", icon: "💥", color: "#ffd166", category: "进阶" },
   { id: "prism_hunter", name: "棱晶猎人", desc: "单局吃到 5 个棱晶", icon: "💎", color: "#a98bff", category: "进阶" },
-  { id: "survivor_3min",name: "幸存者",   desc: "单局存活超过 3 分钟", icon: "🛡️", color: "#5cf28b", category: "进阶" },
-  { id: "fruit_feast",  name: "果实盛宴", desc: "单局吃到 50 个果实", icon: "🍎", color: "#ff6b6b", category: "进阶" },
-  { id: "score_200",    name: "两百分",   desc: "单局达到 200 分", icon: "🎯", color: "#ffd166", category: "高分" },
-  { id: "score_500",    name: "五百分",   desc: "单局达到 500 分", icon: "🏆", color: "#ff6b6b", category: "高分" },
-  { id: "level_10",     name: "登峰造极", desc: "单局达到等级 10", icon: "⛰️", color: "#a98bff", category: "高分" },
+  { id: "survivor_3min", name: "幸存者", desc: "单局存活超过 3 分钟", icon: "🛡️", color: "#5cf28b", category: "进阶" },
+  { id: "fruit_feast", name: "果实盛宴", desc: "单局吃到 50 个果实", icon: "🍎", color: "#ff6b6b", category: "进阶" },
+  { id: "score_200", name: "两百分", desc: "单局达到 200 分", icon: "🎯", color: "#ffd166", category: "高分" },
+  { id: "score_500", name: "五百分", desc: "单局达到 500 分", icon: "🏆", color: "#ff6b6b", category: "高分" },
+  { id: "level_10", name: "登峰造极", desc: "单局达到等级 10", icon: "⛰️", color: "#a98bff", category: "高分" },
   { id: "spark_addict", name: "电光成瘾", desc: "单局吃到 8 个电光", icon: "⚡", color: "#4dd7ff", category: "特殊" },
-  { id: "perfectionist",name: "完美开场", desc: "前 30 秒未死亡且分数达到 80 分", icon: "✨", color: "#5cf28b", category: "特殊" },
+  {
+    id: "perfectionist",
+    name: "完美开场",
+    desc: "前 30 秒未死亡且分数达到 80 分",
+    icon: "✨",
+    color: "#5cf28b",
+    category: "特殊"
+  }
 ];
 
 const COLORS = {
@@ -139,5 +146,5 @@ export {
   BOARD_BG_NAMES,
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
-  CELL_SIZE,
+  CELL_SIZE
 };

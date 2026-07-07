@@ -2,13 +2,24 @@
   "name": "serpent-rush",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "霓虹风格的冲刺贪吃蛇小游戏",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "bundle": "node bundle.js"
+    "bundle": "node bundle.js",
+    "lint": "eslint src/",
+    "format": "prettier --write src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "vite": "^5"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.4",
+    "vite": "^5",
+    "vitest": "^4.1.10"
   }
 }

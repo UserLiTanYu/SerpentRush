@@ -29,8 +29,8 @@ function floatText(point, text, color) {
 function updateEffects(delta) {
   state.particles = state.particles.filter((particle) => {
     particle.life -= delta;
-    particle.x += particle.vx * delta / 1000;
-    particle.y += particle.vy * delta / 1000;
+    particle.x += (particle.vx * delta) / 1000;
+    particle.y += (particle.vy * delta) / 1000;
     particle.vx *= 0.985;
     particle.vy *= 0.985;
     return particle.life > 0;

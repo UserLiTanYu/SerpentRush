@@ -15,8 +15,19 @@ function showAchievementToast(ach) {
 
   var toast = document.createElement("div");
   toast.className = "achieve-toast";
-  toast.innerHTML = '<div class="achieve-toast-icon" style="background:' + ach.color + '22;color:' + ach.color + '">' + ach.icon + '</div>'
-    + '<div class="achieve-toast-body"><strong>' + ach.name + '</strong><span>' + ach.desc + '</span></div>';
+  toast.innerHTML =
+    '<div class="achieve-toast-icon" style="background:' +
+    ach.color +
+    "22;color:" +
+    ach.color +
+    '">' +
+    ach.icon +
+    "</div>" +
+    '<div class="achieve-toast-body"><strong>' +
+    ach.name +
+    "</strong><span>" +
+    ach.desc +
+    "</span></div>";
 
   container.appendChild(toast);
 
@@ -36,18 +47,42 @@ function checkAchievements() {
 
     var unlocked = false;
     switch (ach.id) {
-      case "first_score":   unlocked = state.score >= 50; break;
-      case "first_combo":   unlocked = getActiveCombo(state) >= 3; break;
-      case "first_rush":    unlocked = state.everRushed; break;
-      case "combo_master":  unlocked = getActiveCombo(state) >= 6; break;
-      case "prism_hunter":  unlocked = state.prismCount >= 5; break;
-      case "survivor_3min": unlocked = state.roundElapsed >= 180000; break;
-      case "fruit_feast":   unlocked = state.fruitCount >= 50; break;
-      case "score_200":     unlocked = state.score >= 200; break;
-      case "score_500":     unlocked = state.score >= 500; break;
-      case "level_10":      unlocked = state.level >= 10; break;
-      case "spark_addict":  unlocked = state.sparkCount >= 8; break;
-      case "perfectionist": unlocked = state.earlySurvived && state.score >= 80; break;
+      case "first_score":
+        unlocked = state.score >= 50;
+        break;
+      case "first_combo":
+        unlocked = getActiveCombo(state) >= 3;
+        break;
+      case "first_rush":
+        unlocked = state.everRushed;
+        break;
+      case "combo_master":
+        unlocked = getActiveCombo(state) >= 6;
+        break;
+      case "prism_hunter":
+        unlocked = state.prismCount >= 5;
+        break;
+      case "survivor_3min":
+        unlocked = state.roundElapsed >= 180000;
+        break;
+      case "fruit_feast":
+        unlocked = state.fruitCount >= 50;
+        break;
+      case "score_200":
+        unlocked = state.score >= 200;
+        break;
+      case "score_500":
+        unlocked = state.score >= 500;
+        break;
+      case "level_10":
+        unlocked = state.level >= 10;
+        break;
+      case "spark_addict":
+        unlocked = state.sparkCount >= 8;
+        break;
+      case "perfectionist":
+        unlocked = state.earlySurvived && state.score >= 80;
+        break;
     }
 
     if (unlocked) {
@@ -83,13 +118,25 @@ function renderAchievePanel(filter) {
     var item = document.createElement("div");
     item.className = "achieve-item" + (unlocked ? " is-unlocked" : "");
 
-    item.innerHTML = '<span class="achieve-item-icon" style="background:' + ach.color + '22;color:' + ach.color + '">'
-      + ach.icon + '</span>'
-      + '<span class="achieve-item-body">'
-      + '<strong>' + ach.name + '</strong>'
-      + '<span>' + ach.desc + '</span>'
-      + '</span>'
-      + '<span class="achieve-item-status">' + (unlocked ? "✓" : "🔒") + '</span>';
+    item.innerHTML =
+      '<span class="achieve-item-icon" style="background:' +
+      ach.color +
+      "22;color:" +
+      ach.color +
+      '">' +
+      ach.icon +
+      "</span>" +
+      '<span class="achieve-item-body">' +
+      "<strong>" +
+      ach.name +
+      "</strong>" +
+      "<span>" +
+      ach.desc +
+      "</span>" +
+      "</span>" +
+      '<span class="achieve-item-status">' +
+      (unlocked ? "✓" : "🔒") +
+      "</span>";
 
     achieveList.appendChild(item);
   });

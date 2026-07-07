@@ -78,16 +78,19 @@ function showGameOverOverlay() {
   document.querySelector("#overlayTitle").textContent = state.score + " 分";
   document.querySelector("#overlayCopy").textContent = "本局表现已经记录，看看哪一项还能再往上冲。";
   var roundSummary = document.querySelector("#roundSummary");
-  roundSummary.replaceChildren.apply(roundSummary, summaryItems.map(function (pair) {
-    var item = document.createElement("div");
-    var itemLabel = document.createElement("span");
-    var itemValue = document.createElement("strong");
-    item.className = "summary-item";
-    itemLabel.textContent = pair[0];
-    itemValue.textContent = pair[1];
-    item.append(itemLabel, itemValue);
-    return item;
-  }));
+  roundSummary.replaceChildren.apply(
+    roundSummary,
+    summaryItems.map(function (pair) {
+      var item = document.createElement("div");
+      var itemLabel = document.createElement("span");
+      var itemValue = document.createElement("strong");
+      item.className = "summary-item";
+      itemLabel.textContent = pair[0];
+      itemValue.textContent = pair[1];
+      item.append(itemLabel, itemValue);
+      return item;
+    })
+  );
   roundSummary.classList.remove("is-hidden");
   document.querySelector("#startButton").textContent = "重新开始";
   var difficultySelector = document.querySelector("#difficultySelector");
@@ -142,7 +145,9 @@ function closeAchieve() {
 // ===== THEMES =====
 function applyShellBackground() {
   var gameStage = document.querySelector(".game-stage");
-  SHELL_BACKGROUNDS.forEach(function (bg) { gameStage.classList.remove(bg.cls); });
+  SHELL_BACKGROUNDS.forEach(function (bg) {
+    gameStage.classList.remove(bg.cls);
+  });
   var current = SHELL_BACKGROUNDS[state.shellBgIndex];
   gameStage.classList.add(current.cls);
   document.querySelector("#shellBgName").textContent = current.name;

@@ -5,10 +5,14 @@ import { playTone } from "./audio.js";
 
 function spawnObstaclePack() {
   const diff = CONFIG.DIFFICULTIES[state.difficulty];
-  const targetCount = Math.min(CONFIG.OBSTACLE_MAX, CONFIG.OBSTACLE_BASE + state.level * CONFIG.OBSTACLE_PER_LEVEL + diff.obstacleOffset);
+  const targetCount = Math.min(
+    CONFIG.OBSTACLE_MAX,
+    CONFIG.OBSTACLE_BASE + state.level * CONFIG.OBSTACLE_PER_LEVEL + diff.obstacleOffset
+  );
   while (state.obstacles.length < targetCount) {
     const block = spawnItem(state, "wall");
-    const nearHead = Math.abs(block.x - state.snake[0].x) + Math.abs(block.y - state.snake[0].y) < CONFIG.OBSTACLE_SAFE_DISTANCE;
+    const nearHead =
+      Math.abs(block.x - state.snake[0].x) + Math.abs(block.y - state.snake[0].y) < CONFIG.OBSTACLE_SAFE_DISTANCE;
     if (!nearHead) {
       state.obstacles.push(block);
     }
@@ -28,7 +32,10 @@ function collectFood(item, type) {
   const gained = Math.round(points * Math.max(1, state.combo) * multiplier);
 
   state.score += gained;
-  state.combo = Math.min(CONFIG.COMBO_MAX, state.combo + (type === "fruit" ? CONFIG.COMBO_FRUIT_GAIN : CONFIG.COMBO_SPARK_GAIN));
+  state.combo = Math.min(
+    CONFIG.COMBO_MAX,
+    state.combo + (type === "fruit" ? CONFIG.COMBO_FRUIT_GAIN : CONFIG.COMBO_SPARK_GAIN)
+  );
   state.rush = Math.min(100, state.rush + (type === "fruit" ? CONFIG.RUSH_FRUIT_GAIN : CONFIG.RUSH_SPECIAL_GAIN));
 
   if (type === "spark") {
@@ -65,10 +72,16 @@ function moveSnake() {
   };
 
   if (
-    head.x < 0 || head.x >= CONFIG.BOARD_COLUMNS ||
-    head.y < 0 || head.y >= CONFIG.BOARD_ROWS ||
-    state.snake.some(function (part, index) { return index > 0 && part.x === head.x && part.y === head.y; }) ||
-    state.obstacles.some(function (block) { return block.x === head.x && block.y === head.y; })
+    head.x < 0 ||
+    head.x >= CONFIG.BOARD_COLUMNS ||
+    head.y < 0 ||
+    head.y >= CONFIG.BOARD_ROWS ||
+    state.snake.some(function (part, index) {
+      return index > 0 && part.x === head.x && part.y === head.y;
+    }) ||
+    state.obstacles.some(function (block) {
+      return block.x === head.x && block.y === head.y;
+    })
   ) {
     return { gameOver: true };
   }
@@ -100,7 +113,12 @@ function moveSnake() {
     spawnObstaclePack();
   }
 
-  if (!state.specialFood && Math.random() < (CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) * CONFIG.DIFFICULTIES[state.difficulty].specialSpawnMultiplier) {
+  if (
+    !state.specialFood &&
+    Math.random() <
+      (CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) *
+        CONFIG.DIFFICULTIES[state.difficulty].specialSpawnMultiplier
+  ) {
     state.specialFood = spawnItem(state, Math.random() < CONFIG.SPECIAL_SPARK_CHANCE ? "spark" : "prism");
   }
 
@@ -134,4 +152,12 @@ function setDirection(name) {
   state.nextDirection = wanted;
 }
 
-export { spawnObstaclePack, nextStepInterval, collectFood, moveSnake, getDifficultyTitle, applyDifficulty, setDirection };
+export {
+  spawnObstaclePack,
+  nextStepInterval,
+  collectFood,
+  moveSnake,
+  getDifficultyTitle,
+  applyDifficulty,
+  setDirection
+};

@@ -11,5 +11,9 @@ export default defineConfig({
     rollupOptions: {
       input: "index.html"
     }
+  },
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./test-setup.js"]
   }
 });
