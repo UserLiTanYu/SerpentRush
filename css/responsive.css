@@ -1,0 +1,92 @@
+@media (max-width: 940px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100svh;
+    grid-template-columns: 1fr;
+    align-items: start;
+    overflow: visible;
+  }
+
+  .game-stage {
+    height: auto;
+    min-height: auto;
+  }
+
+  .side-panel {
+    height: auto;
+    min-height: auto;
+    order: -1;
+  }
+
+  .play-area {
+    width: min(100%, 82vh, 920px);
+  }
+
+  .touch-pad {
+    display: grid;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    width: min(100vw - 16px, 460px);
+    padding: 8px 0 14px;
+    gap: 10px;
+  }
+
+  .game-stage,
+  .side-panel {
+    padding: 12px;
+  }
+
+  .top-bar {
+    min-height: 74px;
+    padding: 8px 90px 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .status-pill {
+    min-width: 74px;
+    padding: 9px 10px;
+    font-size: 0.86rem;
+    right: 0;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .stat-card {
+    min-height: 66px;
+    padding: 9px;
+  }
+
+  .stat-card span {
+    font-size: 0.72rem;
+  }
+
+  .stat-card strong {
+    font-size: 1rem;
+  }
+
+  .round-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .tooltip-row::after {
+    left: 0;
+    right: auto;
+  }
+
+  .help-panel {
+    padding: 18px;
+  }
+}

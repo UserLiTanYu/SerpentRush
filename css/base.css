@@ -1,0 +1,83 @@
+:root {
+  color-scheme: dark;
+  --bg: #101216;
+  --panel: #191c21;
+  --panel-strong: #20242b;
+  --line: rgba(255, 255, 255, 0.1);
+  --text: #f6f1e8;
+  --muted: #a7adb4;
+  --green: #5cf28b;
+  --green-dark: #139a67;
+  --coral: #ff6b6b;
+  --gold: #ffd166;
+  --cyan: #4dd7ff;
+  --violet: #a98bff;
+  --ink: #0b0d10;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    Inter, "Microsoft YaHei", "PingFang SC", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2 {
+  margin: 0;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+h1 {
+  font-size: clamp(2rem, 4.2vh, 2.5rem);
+}
+
+h2 {
+  font-size: 1.32rem;
+}
+
+button:hover,
+.close-button:hover,
+.touch-button:hover,
+.primary-action:hover {
+  filter: brightness(1.08);
+}
+
+/* ---- 自定义滚动条 ---- */
+.side-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.side-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.side-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
