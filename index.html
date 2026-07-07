@@ -112,6 +112,13 @@
           </div>
         </div>
 
+        <div class="achieve-bar">
+          <span class="achieve-bar-icon">🏆</span>
+          <span class="achieve-bar-label">成就</span>
+          <strong id="achieveCount">0/12</strong>
+          <button class="theme-cycle-btn" id="achieveBtn" type="button">查看</button>
+        </div>
+
         <div class="actions">
           <button id="helpButton" type="button">玩法说明</button>
           <button id="pauseButton" type="button">暂停</button>
@@ -155,6 +162,28 @@
         </div>
 
         <button class="primary-action" id="confirmHelpButton" type="button">知道了</button>
+      </div>
+    </div>
+
+    <div class="help-modal is-hidden" id="achieveModal" role="dialog" aria-modal="true" aria-labelledby="achieveTitle">
+      <div class="help-panel achieve-panel">
+        <div class="help-head">
+          <div>
+            <p class="round-label">成就</p>
+            <h2 id="achieveTitle">已解锁成就</h2>
+          </div>
+          <button class="close-button" id="closeAchieveButton" type="button" aria-label="关闭成就面板">×</button>
+        </div>
+
+        <div class="achieve-filters">
+          <button class="achieve-filter-btn is-active" data-filter="全部" type="button">全部</button>
+          <button class="achieve-filter-btn" data-filter="入门" type="button">入门</button>
+          <button class="achieve-filter-btn" data-filter="进阶" type="button">进阶</button>
+          <button class="achieve-filter-btn" data-filter="高分" type="button">高分</button>
+          <button class="achieve-filter-btn" data-filter="特殊" type="button">特殊</button>
+        </div>
+
+        <div class="achieve-list" id="achieveList"></div>
       </div>
     </div>
 

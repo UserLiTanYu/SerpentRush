@@ -40,6 +40,21 @@
     MUSIC_SCHEDULE_INTERVAL: 260,
   };
 
+  const ACHIEVEMENTS = [
+    { id: "first_score",  name: "初出茅庐", desc: "单局首次达到 50 分", icon: "⭐", color: "#5cf28b", category: "入门" },
+    { id: "first_combo",  name: "连击入门", desc: "单局连击达到 x3", icon: "🔥", color: "#ffd166", category: "入门" },
+    { id: "first_rush",   name: "冲刺初体验", desc: "首次触发冲刺状态", icon: "⚡", color: "#4dd7ff", category: "入门" },
+    { id: "combo_master", name: "连击大师", desc: "单局连击达到 x6", icon: "💥", color: "#ffd166", category: "进阶" },
+    { id: "prism_hunter", name: "棱晶猎人", desc: "单局吃到 5 个棱晶", icon: "💎", color: "#a98bff", category: "进阶" },
+    { id: "survivor_3min",name: "幸存者",   desc: "单局存活超过 3 分钟", icon: "🛡️", color: "#5cf28b", category: "进阶" },
+    { id: "fruit_feast",  name: "果实盛宴", desc: "单局吃到 50 个果实", icon: "🍎", color: "#ff6b6b", category: "进阶" },
+    { id: "score_200",    name: "两百分",   desc: "单局达到 200 分", icon: "🎯", color: "#ffd166", category: "高分" },
+    { id: "score_500",    name: "五百分",   desc: "单局达到 500 分", icon: "🏆", color: "#ff6b6b", category: "高分" },
+    { id: "level_10",     name: "登峰造极", desc: "单局达到等级 10", icon: "⛰️", color: "#a98bff", category: "高分" },
+    { id: "spark_addict", name: "电光成瘾", desc: "单局吃到 8 个电光", icon: "⚡", color: "#4dd7ff", category: "特殊" },
+    { id: "perfectionist",name: "完美开场", desc: "前 30 秒未死亡且分数达到 80 分", icon: "✨", color: "#5cf28b", category: "特殊" },
+  ];
+
   const COLORS = {
     boardA: "#11151a",
     boardB: "#151a20",
@@ -172,6 +187,12 @@
   const shellBgBtn = document.querySelector("#shellBgBtn");
   const boardBgBtn = document.querySelector("#boardBgBtn");
   const gameStage = document.querySelector(".game-stage");
+  const achieveCount = document.querySelector("#achieveCount");
+  const achieveBtn = document.querySelector("#achieveBtn");
+  const achieveModal = document.querySelector("#achieveModal");
+  const closeAchieveButton = document.querySelector("#closeAchieveButton");
+  const achieveList = document.querySelector("#achieveList");
+  const achieveFilters = document.querySelectorAll(".achieve-filter-btn");
 
   // ===== GAME STATE =====
   function isOccupied(state, point) {
@@ -224,6 +245,18 @@
     localStorage.setItem("serpentRushBoardBg", String(index));
   }
 
+  function loadAchievements() {
+    try {
+      return JSON.parse(localStorage.getItem("serpentRushAchievements") || "{}");
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveAchievements(achievements) {
+    localStorage.setItem("serpentRushAchievements", JSON.stringify(achievements));
+  }
+
   class GameState {
     constructor() {
       this.snake = [];
@@ -258,6 +291,10 @@
       this.fruitCount = 0;
       this.sparkCount = 0;
       this.prismCount = 0;
+      this.achievements = loadAchievements();
+      this.achievementsNew = [];
+      this.everRushed = false;
+      this.earlySurvived = false;
     }
 
     reset() {
@@ -281,6 +318,9 @@
       this.fruitCount = 0;
       this.sparkCount = 0;
       this.prismCount = 0;
+      this.achievementsNew = [];
+      this.everRushed = false;
+      this.earlySurvived = false;
       this.lastTime = performance.now();
       this.state = "ready";
       this.particles = [];
@@ -292,6 +332,67 @@
   }
 
   const state = new GameState();
+
+  // ===== ACHIEVEMENTS =====
+  function showAchievementToast(ach) {
+    let container = document.querySelector(".achieve-toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.className = "achieve-toast-container";
+      document.body.appendChild(container);
+    }
+
+    if (container.children.length >= 2) {
+      container.firstChild.remove();
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "achieve-toast";
+    toast.innerHTML = '<div class="achieve-toast-icon" style="background:' + ach.color + '22;color:' + ach.color + '">' + ach.icon + '</div>'
+      + '<div class="achieve-toast-body"><strong>' + ach.name + '</strong><span>' + ach.desc + '</span></div>';
+
+    container.appendChild(toast);
+
+    setTimeout(function () {
+      if (toast.parentNode) toast.remove();
+    }, 3200);
+  }
+
+  function updateAchieveCount() {
+    var el = document.querySelector("#achieveCount");
+    if (el) el.textContent = Object.keys(state.achievements).length + "/12";
+  }
+
+  function checkAchievements() {
+    ACHIEVEMENTS.forEach(function (ach) {
+      if (state.achievements[ach.id]) return;
+
+      var unlocked = false;
+      switch (ach.id) {
+        case "first_score":   unlocked = state.score >= 50; break;
+        case "first_combo":   unlocked = getActiveCombo(state) >= 3; break;
+        case "first_rush":    unlocked = state.everRushed; break;
+        case "combo_master":  unlocked = getActiveCombo(state) >= 6; break;
+        case "prism_hunter":  unlocked = state.prismCount >= 5; break;
+        case "survivor_3min": unlocked = state.roundElapsed >= 180000; break;
+        case "fruit_feast":   unlocked = state.fruitCount >= 50; break;
+        case "score_200":     unlocked = state.score >= 200; break;
+        case "score_500":     unlocked = state.score >= 500; break;
+        case "level_10":      unlocked = state.level >= 10; break;
+        case "spark_addict":  unlocked = state.sparkCount >= 8; break;
+        case "perfectionist": unlocked = state.earlySurvived && state.score >= 80; break;
+      }
+
+      if (unlocked) {
+        state.achievements[ach.id] = true;
+        state.achievementsNew.push(ach.id);
+        saveAchievements(state.achievements);
+        showAchievementToast(ach);
+      }
+    });
+
+    updateAchieveCount();
+  }
 
   // ===== AUDIO =====
   function unlockAudio() {
@@ -783,8 +884,60 @@
     state.helpPreviousState = null;
   }
 
+  function renderAchievePanel(filter) {
+    if (!achieveList) return;
+    filter = filter || "全部";
+
+    var activeFilterBtn = document.querySelector(".achieve-filter-btn.is-active");
+    if (activeFilterBtn) activeFilterBtn.classList.remove("is-active");
+
+    achieveFilters.forEach(function (btn) {
+      if (btn.dataset.filter === filter) btn.classList.add("is-active");
+    });
+
+    achieveList.innerHTML = "";
+
+    ACHIEVEMENTS.forEach(function (ach) {
+      if (filter !== "全部" && ach.category !== filter) return;
+
+      var unlocked = !!state.achievements[ach.id];
+      var item = document.createElement("div");
+      item.className = "achieve-item" + (unlocked ? " is-unlocked" : "");
+
+      item.innerHTML = '<span class="achieve-item-icon" style="background:' + ach.color + '22;color:' + ach.color + '">'
+        + ach.icon + '</span>'
+        + '<span class="achieve-item-body">'
+        + '<strong>' + ach.name + '</strong>'
+        + '<span>' + ach.desc + '</span>'
+        + '</span>'
+        + '<span class="achieve-item-status">' + (unlocked ? "✓" : "🔒") + '</span>';
+
+      achieveList.appendChild(item);
+    });
+
+    updateAchieveCount();
+  }
+
+  function openAchieve() {
+    renderAchievePanel("全部");
+    achieveModal.classList.remove("is-hidden");
+    closeAchieveButton.focus();
+  }
+
+  function closeAchieve() {
+    achieveModal.classList.add("is-hidden");
+  }
+
   // ===== INPUT =====
   window.addEventListener("keydown", (event) => {
+    if (!achieveModal.classList.contains("is-hidden")) {
+      if (event.code === "Escape") {
+        event.preventDefault();
+        closeAchieve();
+      }
+      return;
+    }
+
     if (!helpModal.classList.contains("is-hidden")) {
       if (event.code === "Escape") {
         event.preventDefault();
@@ -857,6 +1010,7 @@
 
     if (type === "spark") {
       state.rush = 100;
+      state.everRushed = true;
     }
     if (type === "prism") {
       state.multiplierTicks = CONFIG.PRISM_MULTIPLIER_TICKS;
@@ -932,6 +1086,7 @@
       state.multiplierTicks -= 1;
     }
 
+    checkAchievements();
     updateHud();
   }
 
@@ -1012,6 +1167,10 @@
 
     if (state.state === "running") {
       state.roundElapsed += delta;
+      if (!state.earlySurvived && state.roundElapsed >= 30000) {
+        state.earlySurvived = true;
+        checkAchievements();
+      }
       state.moveTimer += delta;
       if (state.moveTimer >= nextStepInterval()) {
         state.moveTimer = 0;
@@ -1071,10 +1230,31 @@
     cycleBoardBackground();
   });
 
+  achieveBtn.addEventListener("click", () => {
+    openAchieve();
+  });
+
+  closeAchieveButton.addEventListener("click", () => {
+    closeAchieve();
+  });
+
+  achieveModal.addEventListener("click", (event) => {
+    if (event.target === achieveModal) {
+      closeAchieve();
+    }
+  });
+
+  achieveFilters.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      renderAchievePanel(btn.dataset.filter);
+    });
+  });
+
   // ===== INIT =====
   resetGame();
   loadBgPreferences(state);
   applyShellBackground();
   applyBoardBackground();
+  updateAchieveCount();
   requestAnimationFrame(tick);
 })();
