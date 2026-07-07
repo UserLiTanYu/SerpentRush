@@ -82,10 +82,69 @@
   };
 
   const canvas = document.querySelector("#gameCanvas");
-  const ctx = canvas.getContext("2d");
+  let ctx = canvas.getContext("2d");
   const CANVAS_WIDTH = canvas.width;
   const CANVAS_HEIGHT = canvas.height;
   const CELL_SIZE = Math.min(CANVAS_WIDTH / CONFIG.BOARD_COLUMNS, CANVAS_HEIGHT / CONFIG.BOARD_ROWS);
+
+  // ===== BACKGROUND CACHE =====
+  let bgCache = null;
+  let bgCacheKey = null;
+  const supportsOffscreen = typeof OffscreenCanvas !== "undefined";
+
+  function drawBoardDirect(targetCtx) {
+    boardBgDrawFns[BOARD_BACKGROUNDS[state.boardBgIndex]]();
+
+    for (let y = 0; y < CONFIG.BOARD_ROWS; y += 1) {
+      for (let x = 0; x < CONFIG.BOARD_COLUMNS; x += 1) {
+        if ((x + y) % 2 === 0) {
+          targetCtx.fillStyle = "rgba(255,255,255,0.025)";
+          targetCtx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+      }
+    }
+
+    targetCtx.strokeStyle = COLORS.grid;
+    targetCtx.lineWidth = 1;
+    for (let i = 0; i <= CONFIG.BOARD_COLUMNS; i += 1) {
+      const p = i * CELL_SIZE;
+      targetCtx.beginPath();
+      targetCtx.moveTo(p, 0);
+      targetCtx.lineTo(p, CANVAS_HEIGHT);
+      targetCtx.stroke();
+    }
+
+    for (let i = 0; i <= CONFIG.BOARD_ROWS; i += 1) {
+      const p = i * CELL_SIZE;
+      targetCtx.beginPath();
+      targetCtx.moveTo(0, p);
+      targetCtx.lineTo(CANVAS_WIDTH, p);
+      targetCtx.stroke();
+    }
+  }
+
+  function ensureBgCache() {
+    if (!supportsOffscreen) return;
+
+    const currentKey = BOARD_BACKGROUNDS[state.boardBgIndex];
+    if (bgCache && bgCacheKey === currentKey) return;
+
+    const offscreen = new OffscreenCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    const offCtx = offscreen.getContext("2d");
+
+    const savedCtx = ctx;
+    ctx = offCtx;
+    drawBoardDirect(offCtx);
+    ctx = savedCtx;
+
+    bgCache = offscreen;
+    bgCacheKey = currentKey;
+  }
+
+  function invalidateBgCache() {
+    bgCache = null;
+    bgCacheKey = null;
+  }
 
   // ===== DOM ELEMENTS =====
   const scoreValue = document.querySelector("#scoreValue");
@@ -490,33 +549,11 @@
   };
 
   function drawBoard() {
-    boardBgDrawFns[BOARD_BACKGROUNDS[state.boardBgIndex]]();
-
-    for (let y = 0; y < CONFIG.BOARD_ROWS; y += 1) {
-      for (let x = 0; x < CONFIG.BOARD_COLUMNS; x += 1) {
-        if ((x + y) % 2 === 0) {
-          ctx.fillStyle = "rgba(255,255,255,0.025)";
-          ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-        }
-      }
-    }
-
-    ctx.strokeStyle = COLORS.grid;
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= CONFIG.BOARD_COLUMNS; i += 1) {
-      const p = i * CELL_SIZE;
-      ctx.beginPath();
-      ctx.moveTo(p, 0);
-      ctx.lineTo(p, CANVAS_HEIGHT);
-      ctx.stroke();
-    }
-
-    for (let i = 0; i <= CONFIG.BOARD_ROWS; i += 1) {
-      const p = i * CELL_SIZE;
-      ctx.beginPath();
-      ctx.moveTo(0, p);
-      ctx.lineTo(CANVAS_WIDTH, p);
-      ctx.stroke();
+    ensureBgCache();
+    if (bgCache) {
+      ctx.drawImage(bgCache, 0, 0);
+    } else {
+      drawBoardDirect(ctx);
     }
   }
 
@@ -965,6 +1002,7 @@
     state.boardBgIndex = (state.boardBgIndex + 1) % 5;
     saveBoardBg(state.boardBgIndex);
     applyBoardBackground();
+    invalidateBgCache();
   }
 
   // ===== GAME LOOP =====
