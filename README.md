@@ -91,6 +91,8 @@ SerpentRush/
 │   ├── input.js        # 触屏方向输入
 │   └── main.js         # 入口：DOM 引用、游戏流程编排、事件绑定、初始化
 ├── bundle.js           # 构建脚本，将 src/ 下模块打包为 game.js
+├── package.json        # 项目元信息与 npm 脚本
+├── vite.config.js      # Vite 构建配置
 ├── assets/             # README 展示图片
 ├── README.md           # 项目说明
 └── .gitignore          # Git 忽略规则
@@ -98,26 +100,29 @@ SerpentRush/
 
 ### 开发说明
 
-源代码使用 ES 模块组织在 `src/` 和 `css/` 目录下。修改源代码后，运行以下命令重新打包：
+源代码使用 ES 模块组织在 `src/` 和 `css/` 目录下。
 
 ```bash
-node bundle.js
+# 首次安装依赖
+npm install
+
+# 启动开发服务器（支持热更新）
+npm run dev
+# → 浏览器打开 http://localhost:5173
+
+# 打包生产版本（输出到 dist/）
+npm run build
+
+# 旧方式：打包单文件 game.js（file:// 直接打开）
+npm run bundle
 ```
 
-打包后的 `game.js` 可直接通过 `file://` 协议在浏览器中运行，无需本地服务器。
+### 旧开发方式（备选）
 
-## 运行方式
+`npm run bundle` 会调用 `node bundle.js` 将 `src/` 下所有模块合并为 `game.js`。打包后将 `index.html` 中的脚本标签改回 `<script src="game.js"></script>`，即可双击打开。运行方式
 
-直接用浏览器打开 `index.html` 文件即可运行。
-
-也可以在项目目录中启动任意静态服务器后访问页面，例如：
+右键 `index.html` → 用浏览器打开，或启动本地服务器：
 
 ```bash
-python -m http.server 5173
-```
-
-然后在浏览器中打开：
-
-```text
-http://127.0.0.1:5173
+npm run dev
 ```
