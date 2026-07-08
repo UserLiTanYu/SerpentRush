@@ -11,13 +11,15 @@
     "lint": "eslint src/",
     "format": "prettier --write src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "screenshot": "node scripts/screenshot.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
+    "playwright-core": "^1.61.1",
     "prettier": "^3.9.4",
     "vite": "^5",
     "vitest": "^4.1.10"
