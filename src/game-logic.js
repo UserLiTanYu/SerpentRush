@@ -28,7 +28,7 @@ function nextStepInterval() {
 }
 
 function collectFood(item, type) {
-  const multiplier = state.multiplierTicks > 0 ? 2 : 1;
+  const multiplier = performance.now() < state.multiplierUntil ? 2 : 1;
   const basePoints =
     type === "fruit"
       ? CONFIG.SCORE_FRUIT
@@ -93,8 +93,12 @@ function collectFood(item, type) {
   playTone(type);
 }
 
-function moveSnake() {
+function moveSnake(delta) {
   state.direction = state.nextDirection;
+  if (state.inputBuffer !== null) {
+    state.nextDirection = state.inputBuffer;
+    state.inputBuffer = null;
+  }
 
   const head = {
     x: state.snake[0].x + state.direction.x,
@@ -114,18 +118,14 @@ function moveSnake() {
 
   if (hitWall || hitSelf || hitObstacle) {
     if (performance.now() < state.shieldUntil) {
-      // Shield absorbs the hit
+      // Shield absorbs ALL hits
       if (hitObstacle) {
         state.obstacles.splice(hitObstacleIndex, 1);
       } else if (hitSelf && hitSelfIndex > 1) {
-        // Truncate snake at collision point (remove segments from collision to tail)
         state.snake.splice(hitSelfIndex);
-      } else {
-        // Wall collision or self-collision at segment right after head — shield can't save
-        return { gameOver: true };
       }
       playShieldHit();
-      // Don't consume shield ticks here — ticks decrement normally below
+      return null;
     } else {
       return { gameOver: true };
     }
@@ -154,7 +154,9 @@ function moveSnake() {
 
   if (!grew) {
     state.snake.pop();
-    state.combo = Math.max(1, state.combo - CONFIG.DIFFICULTIES[state.difficulty].comboDecay);
+    const decayPerSecond = CONFIG.DIFFICULTIES[state.difficulty].comboDecay;
+    const decayAmount = decayPerSecond * (delta / 1000);
+    state.combo = Math.max(1, state.combo - decayAmount);
     state.rush = Math.max(0, state.rush - CONFIG.RUSH_DECAY);
   }
 
@@ -204,10 +206,23 @@ function setDirection(name) {
   if (!wanted || state.state === "gameover") {
     return;
   }
-  if (wanted.x + state.direction.x === 0 && wanted.y + state.direction.y === 0) {
+
+  const current = state.inputBuffer || state.direction;
+
+  if (wanted.x + current.x === 0 && wanted.y + current.y === 0) {
     return;
   }
-  state.nextDirection = wanted;
+
+  if (wanted.x === current.x && wanted.y === current.y) {
+    return;
+  }
+
+  if (state.inputBuffer === null) {
+    state.inputBuffer = wanted;
+    state.nextDirection = wanted;
+  } else {
+    state.inputBuffer = wanted;
+  }
 }
 
 export {

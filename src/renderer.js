@@ -117,21 +117,18 @@ function drawBoardDirect(targetCtx) {
 
   targetCtx.strokeStyle = COLORS.grid;
   targetCtx.lineWidth = 1;
+  targetCtx.beginPath();
   for (let i = 0; i <= CONFIG.BOARD_COLUMNS; i += 1) {
     const p = i * CELL_SIZE;
-    targetCtx.beginPath();
     targetCtx.moveTo(p, 0);
     targetCtx.lineTo(p, CANVAS_HEIGHT);
-    targetCtx.stroke();
   }
-
   for (let i = 0; i <= CONFIG.BOARD_ROWS; i += 1) {
     const p = i * CELL_SIZE;
-    targetCtx.beginPath();
     targetCtx.moveTo(0, p);
     targetCtx.lineTo(CANVAS_WIDTH, p);
-    targetCtx.stroke();
   }
+  targetCtx.stroke();
 }
 
 function ensureBgCache() {
@@ -188,7 +185,7 @@ function drawCell(point, fill, inset, radius) {
   ctx.fill();
 }
 
-function drawFoodItem(item) {
+function drawFoodItem(item, now) {
   if (!item) {
     return;
   }
@@ -204,8 +201,7 @@ function drawFoodItem(item) {
             : COLORS.fruit;
   const centerX = (item.x + 0.5) * CELL_SIZE;
   const centerY = (item.y + 0.5) * CELL_SIZE;
-  const pulse = 1 + Math.sin(performance.now() / 120) * 0.07;
-  const now = performance.now();
+  const pulse = 1 + Math.sin(now / 120) * 0.07;
 
   ctx.save();
   ctx.shadowColor = color;
@@ -282,19 +278,22 @@ function drawEyes(head) {
 }
 
 function drawSnake() {
-  state.snake.forEach(function (part, index) {
-    const isHead = index === 0;
-    const shade = index % 2 === 0 ? COLORS.snake : COLORS.snakeDark;
-    ctx.save();
-    ctx.shadowColor = isHead ? COLORS.snake : "transparent";
-    ctx.shadowBlur = isHead ? 18 : 0;
-    drawCell(part, isHead ? COLORS.head : shade, isHead ? 3 : 4, isHead ? 9 : 7);
-    ctx.restore();
+  if (state.snake.length === 0) return;
 
-    if (isHead) {
-      drawEyes(part);
-    }
-  });
+  for (let index = 1; index < state.snake.length; index++) {
+    const part = state.snake[index];
+    const shade = index % 2 === 0 ? COLORS.snake : COLORS.snakeDark;
+    drawCell(part, shade, 4, 7);
+  }
+
+  const head = state.snake[0];
+  ctx.save();
+  ctx.shadowColor = COLORS.snake;
+  ctx.shadowBlur = 18;
+  drawCell(head, COLORS.head, 3, 9);
+  ctx.restore();
+
+  drawEyes(head);
 }
 
 function drawObstacles() {
@@ -348,11 +347,11 @@ function drawTrail(state) {
   ctx.globalAlpha = 1;
 }
 
-function drawComboPulse(state) {
+function drawComboPulse(state, now) {
   const combo = getActiveCombo(state);
   if (combo < 4) return;
   const intensity = (combo - 3) / 13; // x4 → ~0.08, x8 → ~0.38
-  const alpha = Math.min(0.45, intensity * (0.7 + 0.3 * Math.sin(performance.now() / 300)));
+  const alpha = Math.min(0.45, intensity * (0.7 + 0.3 * Math.sin(now / 300)));
   const edgeSize = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT) * 0.08;
 
   // Gradient from edges inward — low combo green, high combo gold
@@ -391,17 +390,16 @@ function drawComboPulse(state) {
   ctx.fillRect(CANVAS_WIDTH - edgeSize, 0, edgeSize, CANVAS_HEIGHT);
 }
 
-function drawHueShift(state) {
-  if (performance.now() >= state.hueShiftUntil) return;
-  const remaining = state.hueShiftUntil - performance.now();
+function drawHueShift(state, now) {
+  if (now >= state.hueShiftUntil) return;
+  const remaining = state.hueShiftUntil - now;
   const progress = 1 - remaining / CONFIG.HUE_SHIFT_DURATION;
   const alpha = 0.12 * (1 - progress);
   ctx.fillStyle = "rgba(169,139,255," + alpha + ")";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
-function drawCountdownTimers(state) {
-  const now = performance.now();
+function drawCountdownTimers(state, now) {
   const timers = [];
 
   if (now < state.multiplierUntil) {
@@ -458,16 +456,17 @@ function drawCountdownTimers(state) {
 }
 
 function render() {
+  const now = performance.now();
   drawBoard();
-  drawFoodItem(state.food);
-  drawFoodItem(state.specialFood);
+  drawFoodItem(state.food, now);
+  drawFoodItem(state.specialFood, now);
   drawObstacles();
   drawTrail(state);
   drawSnake();
   drawEffects();
-  drawComboPulse(state);
-  drawHueShift(state);
-  drawCountdownTimers(state);
+  drawComboPulse(state, now);
+  drawHueShift(state, now);
+  drawCountdownTimers(state, now);
 }
 
 export { invalidateBgCache, render };

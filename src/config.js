@@ -45,7 +45,7 @@ const CONFIG = {
       obstacleStartLevel: 3,
       obstacleOffset: -2,
       specialSpawnMultiplier: 1.5,
-      comboDecay: 0.01
+      comboDecay: 0.12
     },
     normal: {
       name: "普通",
@@ -55,7 +55,7 @@ const CONFIG = {
       obstacleStartLevel: 2,
       obstacleOffset: 0,
       specialSpawnMultiplier: 1.0,
-      comboDecay: 0.015
+      comboDecay: 0.18
     },
     hard: {
       name: "困难",
@@ -65,7 +65,7 @@ const CONFIG = {
       obstacleStartLevel: 1,
       obstacleOffset: 2,
       specialSpawnMultiplier: 0.7,
-      comboDecay: 0.02
+      comboDecay: 0.25
     }
   },
   PARTICLE_FRUIT_COUNT: 14,

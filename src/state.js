@@ -11,12 +11,26 @@ function isOccupied(state, point) {
 
 function spawnItem(state, type) {
   let point;
+  let attempts = 0;
+  const maxAttempts = 200;
   do {
     point = {
       x: Math.floor(Math.random() * CONFIG.BOARD_COLUMNS),
       y: Math.floor(Math.random() * CONFIG.BOARD_ROWS),
       type
     };
+    attempts++;
+    if (attempts >= maxAttempts) {
+      for (let y = 0; y < CONFIG.BOARD_ROWS; y++) {
+        for (let x = 0; x < CONFIG.BOARD_COLUMNS; x++) {
+          const candidate = { x, y, type };
+          if (!isOccupied(state, candidate)) {
+            return candidate;
+          }
+        }
+      }
+      return point;
+    }
   } while (isOccupied(state, point));
   return point;
 }
@@ -69,6 +83,7 @@ class GameState {
     this.snake = [];
     this.direction = DIRECTIONS.right;
     this.nextDirection = DIRECTIONS.right;
+    this.inputBuffer = null;
     this.food = null;
     this.specialFood = null;
     this.obstacles = [];
@@ -119,6 +134,7 @@ class GameState {
     ];
     this.direction = DIRECTIONS.right;
     this.nextDirection = DIRECTIONS.right;
+    this.inputBuffer = null;
     this.obstacles = [];
     this.score = 0;
     this.combo = 1;

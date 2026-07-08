@@ -108,7 +108,7 @@ function tick(time) {
     state.moveTimer += delta;
     if (state.moveTimer >= nextStepInterval()) {
       state.moveTimer = 0;
-      var result = moveSnake();
+      var result = moveSnake(delta);
       if (result && result.gameOver) {
         gameOver();
       } else {
@@ -163,10 +163,10 @@ window.addEventListener("keydown", function (event) {
   if (keyMap[event.code]) {
     event.preventDefault();
     unlockAudio();
-    setDirection(keyMap[event.code]);
     if (state.state === "ready") {
       startGame();
     }
+    setDirection(keyMap[event.code]);
   }
   if (event.code === "Space") {
     event.preventDefault();
@@ -304,4 +304,12 @@ if (diffBadge) {
 if (difficultySelector) {
   difficultySelector.setAttribute("data-active", "normal");
 }
+
+// ===== VISIBILITY CHANGE =====
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden && state.state === "running") {
+    pauseGame();
+  }
+});
+
 requestAnimationFrame(tick);
