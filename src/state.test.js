@@ -59,16 +59,17 @@ describe("isOccupied", () => {
 
 describe("getActiveCombo", () => {
   it("returns base combo when no multiplier is active", () => {
-    expect(getActiveCombo({ combo: 1, multiplierTicks: 0 })).toBe(1);
-    expect(getActiveCombo({ combo: 2.5, multiplierTicks: 0 })).toBe(2.5);
+    expect(getActiveCombo({ combo: 1, multiplierUntil: 0 })).toBe(1);
+    expect(getActiveCombo({ combo: 2.5, multiplierUntil: 0 })).toBe(2.5);
   });
 
   it("returns doubled combo when multiplier is active", () => {
-    expect(getActiveCombo({ combo: 2, multiplierTicks: 5 })).toBe(4);
-    expect(getActiveCombo({ combo: 3.5, multiplierTicks: 1 })).toBe(7);
+    const now = performance.now();
+    expect(getActiveCombo({ combo: 2, multiplierUntil: now + 10000 })).toBe(4);
+    expect(getActiveCombo({ combo: 3.5, multiplierUntil: now + 10000 })).toBe(7);
   });
 
-  it("returns base combo when multiplierTicks is zero", () => {
-    expect(getActiveCombo({ combo: 5, multiplierTicks: 0 })).toBe(5);
+  it("returns base combo when multiplierUntil is in the past", () => {
+    expect(getActiveCombo({ combo: 5, multiplierUntil: 0 })).toBe(5);
   });
 });

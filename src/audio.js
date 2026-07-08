@@ -15,7 +15,15 @@ function playTone(type) {
     return;
   }
   const frequency =
-    type === "fruit" ? CONFIG.TONE_FRUIT_HZ : type === "spark" ? CONFIG.TONE_SPARK_HZ : CONFIG.TONE_PRISM_HZ;
+    type === "fruit"
+      ? CONFIG.TONE_FRUIT_HZ
+      : type === "spark"
+        ? CONFIG.TONE_SPARK_HZ
+        : type === "prism"
+          ? CONFIG.TONE_PRISM_HZ
+          : type === "shield"
+            ? CONFIG.TONE_SHIELD_HZ
+            : CONFIG.TONE_SLOW_HZ;
   const osc = state.audioContext.createOscillator();
   const gain = state.audioContext.createGain();
   osc.frequency.value = frequency;
@@ -26,6 +34,22 @@ function playTone(type) {
   gain.connect(state.audioContext.destination);
   osc.start();
   osc.stop(state.audioContext.currentTime + 0.13);
+}
+
+function playShieldHit() {
+  if (!state.audioContext) {
+    return;
+  }
+  const osc = state.audioContext.createOscillator();
+  const gain = state.audioContext.createGain();
+  osc.frequency.value = CONFIG.TONE_SHIELD_HZ;
+  osc.type = "sine";
+  gain.gain.setValueAtTime(0.09, state.audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, state.audioContext.currentTime + 0.08);
+  osc.connect(gain);
+  gain.connect(state.audioContext.destination);
+  osc.start();
+  osc.stop(state.audioContext.currentTime + 0.09);
 }
 
 function playMusicNote(frequency, startTime, duration, type, volume) {
@@ -110,4 +134,4 @@ function stopMusic() {
   state.musicGain = null;
 }
 
-export { unlockAudio, playTone, scheduleMusic, startMusic, stopMusic };
+export { unlockAudio, playTone, playShieldHit, scheduleMusic, startMusic, stopMusic };

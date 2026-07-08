@@ -38,6 +38,10 @@ const boardBgBtn = document.querySelector("#boardBgBtn");
 const achieveBtn = document.querySelector("#achieveBtn");
 const achieveModal = document.querySelector("#achieveModal");
 const closeAchieveButton = document.querySelector("#closeAchieveButton");
+const itemGuideBtn = document.querySelector("#itemGuideBtn");
+const itemGuideModal = document.querySelector("#itemGuideModal");
+const closeItemGuideButton = document.querySelector("#closeItemGuideButton");
+const confirmItemGuideButton = document.querySelector("#confirmItemGuideButton");
 const difficultySelector = document.querySelector("#difficultySelector");
 
 // ===== GAME FLOW =====
@@ -125,6 +129,14 @@ window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
       event.preventDefault();
       closeAchieve();
+    }
+    return;
+  }
+
+  if (!itemGuideModal.classList.contains("is-hidden")) {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      itemGuideModal.classList.add("is-hidden");
     }
     return;
   }
@@ -226,6 +238,25 @@ closeAchieveButton.addEventListener("click", function () {
 achieveModal.addEventListener("click", function (event) {
   if (event.target === achieveModal) {
     closeAchieve();
+  }
+});
+
+itemGuideBtn.addEventListener("click", function () {
+  itemGuideModal.classList.remove("is-hidden");
+  closeItemGuideButton.focus();
+});
+
+closeItemGuideButton.addEventListener("click", function () {
+  itemGuideModal.classList.add("is-hidden");
+});
+
+confirmItemGuideButton.addEventListener("click", function () {
+  itemGuideModal.classList.add("is-hidden");
+});
+
+itemGuideModal.addEventListener("click", function (event) {
+  if (event.target === itemGuideModal) {
+    itemGuideModal.classList.add("is-hidden");
   }
 });
 

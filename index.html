@@ -99,26 +99,10 @@
         </div>
 
         <div class="inventory">
-          <div class="item-line tooltip-row" tabindex="0" data-tooltip="基础食物，获得 10 分，并增加少量冲刺能量。">
-            <span class="legend-dot fruit"></span>
-            <span>果实</span>
-            <strong>+10</strong>
-          </div>
-          <div class="item-line tooltip-row" tabindex="0" data-tooltip="直接充满冲刺能量，让蛇进入更快节奏。">
-            <span class="legend-dot spark"></span>
-            <span>电光</span>
-            <strong>冲刺</strong>
-          </div>
-          <div class="item-line tooltip-row" tabindex="0" data-tooltip="短时间内得分翻倍，适合在高连击时吃。">
-            <span class="legend-dot prism"></span>
-            <span>棱晶</span>
-            <strong>x2</strong>
-          </div>
-          <div class="item-line tooltip-row" tabindex="0" data-tooltip="等级提升后出现，撞上会结束本局。">
-            <span class="legend-dot wall"></span>
-            <span>障碍</span>
-            <strong>避开</strong>
-          </div>
+          <button class="inventory-toggle" id="itemGuideBtn" type="button">
+            <span>道具图鉴</span>
+            <span class="inventory-count">6 种 ›</span>
+          </button>
         </div>
 
         <div class="theme-switcher">
@@ -176,7 +160,7 @@
           </section>
           <section>
             <h3>冲刺与道具</h3>
-            <p>果实加基础分和能量；电光会直接充满冲刺能量；棱晶会让得分暂时翻倍。冲刺能量满时，蛇会进入更快的节奏。</p>
+            <p>果实加基础分和能量；电光会直接充满冲刺能量；棱晶会让得分暂时翻倍（10 秒）；护盾让你在 8 秒内碰到障碍或自身时免于死亡；缓速会让蛇在 12 秒内移动变慢，便于精确操控。冲刺能量满时，蛇会进入更快的节奏。</p>
           </section>
           <section>
             <h3>联机</h3>
@@ -207,6 +191,71 @@
         </div>
 
         <div class="achieve-list" id="achieveList"></div>
+      </div>
+    </div>
+
+    <div class="help-modal is-hidden" id="itemGuideModal" role="dialog" aria-modal="true" aria-labelledby="itemGuideTitle">
+      <div class="help-panel">
+        <div class="help-head">
+          <div>
+            <p class="round-label">道具图鉴</p>
+            <h2 id="itemGuideTitle">全部道具一览</h2>
+          </div>
+          <button class="close-button" id="closeItemGuideButton" type="button" aria-label="关闭道具图鉴">×</button>
+        </div>
+
+        <div class="item-guide-grid">
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot fruit"></span>
+              <strong>果实</strong>
+              <span class="item-guide-tag">+10 分</span>
+            </div>
+            <p>最基础的食物，吃到后获得 10 分，并增加少量冲刺能量。场上始终存在一个。</p>
+          </div>
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot spark"></span>
+              <strong>电光</strong>
+              <span class="item-guide-tag">冲刺</span>
+            </div>
+            <p>直接将冲刺能量充满至 100%，蛇立即进入加速状态。在高连击时使用效果更佳。</p>
+          </div>
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot prism"></span>
+              <strong>棱晶</strong>
+              <span class="item-guide-tag">×2 得分</span>
+            </div>
+            <p>短时间内让所有得分翻倍（持续 10 秒）。适合在连击倍数高时吃到，收益最大化。</p>
+          </div>
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot shield"></span>
+              <strong>护盾</strong>
+              <span class="item-guide-tag">防护 8 秒</span>
+            </div>
+            <p>获得后 8 秒内碰到障碍物或自身不会死亡。碰到障碍物会清除该障碍物，碰到自身会截断蛇身。</p>
+          </div>
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot slow"></span>
+              <strong>缓速</strong>
+              <span class="item-guide-tag">减速 12 秒</span>
+            </div>
+            <p>获得后 12 秒内蛇的移动速度减半，便于在复杂地形中精确操控路线。</p>
+          </div>
+          <div class="item-guide-card">
+            <div class="item-guide-header">
+              <span class="legend-dot wall"></span>
+              <strong>障碍</strong>
+              <span class="item-guide-tag">危险</span>
+            </div>
+            <p>等级提升后出现在场上，撞上会结束本局。可以通过护盾清除，或利用缓速绕过。</p>
+          </div>
+        </div>
+
+        <button class="primary-action" id="confirmItemGuideButton" type="button">知道了</button>
       </div>
     </div>
 

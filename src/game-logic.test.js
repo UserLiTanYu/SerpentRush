@@ -181,7 +181,7 @@ describe("moveSnake", () => {
     const result = moveSnake();
 
     expect(result).toBeNull();
-    expect(state.multiplierTicks).toBe(CONFIG.PRISM_MULTIPLIER_TICKS - 1);
+    expect(state.multiplierUntil).toBeGreaterThan(performance.now());
     expect(state.prismCount).toBe(1);
   });
 });

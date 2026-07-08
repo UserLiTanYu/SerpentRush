@@ -1,5 +1,5 @@
 import { CONFIG, COLORS, BOARD_BACKGROUNDS, CANVAS_WIDTH, CANVAS_HEIGHT, CELL_SIZE } from "./config.js";
-import { state } from "./state.js";
+import { getActiveCombo, state } from "./state.js";
 
 const canvas = document.querySelector("#gameCanvas");
 let ctx = canvas.getContext("2d");
@@ -192,24 +192,78 @@ function drawFoodItem(item) {
   if (!item) {
     return;
   }
-  const color = item.type === "spark" ? COLORS.spark : item.type === "prism" ? COLORS.prism : COLORS.fruit;
+  const color =
+    item.type === "spark"
+      ? COLORS.spark
+      : item.type === "prism"
+        ? COLORS.prism
+        : item.type === "shield"
+          ? COLORS.shield
+          : item.type === "slow"
+            ? COLORS.slow
+            : COLORS.fruit;
   const centerX = (item.x + 0.5) * CELL_SIZE;
   const centerY = (item.y + 0.5) * CELL_SIZE;
   const pulse = 1 + Math.sin(performance.now() / 120) * 0.07;
+  const now = performance.now();
 
   ctx.save();
   ctx.shadowColor = color;
   ctx.shadowBlur = item.type === "fruit" ? 14 : 24;
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, CELL_SIZE * 0.27 * pulse, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
 
-  ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.beginPath();
-  ctx.arc(centerX - 4, centerY - 5, CELL_SIZE * 0.07, 0, Math.PI * 2);
-  ctx.fill();
+  if (item.type === "shield") {
+    // Gold hexagon with glow pulse
+    const glowPulse = 0.85 + 0.15 * Math.sin(now / 200);
+    const r = CELL_SIZE * 0.3 * pulse * glowPulse;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 6;
+      const px = centerX + r * Math.cos(angle);
+      const py = centerY + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    // Inner highlight
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.beginPath();
+    ctx.arc(centerX - 3, centerY - 4, CELL_SIZE * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (item.type === "slow") {
+    // Blue circle with two horizontal bars (slow indicator)
+    const r = CELL_SIZE * 0.27 * pulse;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+    ctx.fill();
+    // Two horizontal bars inside
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    const barW = r * 0.7;
+    const barH = 2.5;
+    ctx.fillRect(centerX - barW / 2, centerY - 4, barW, barH);
+    ctx.fillRect(centerX - barW / 2, centerY + 2, barW, barH);
+    // Highlight
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.beginPath();
+    ctx.arc(centerX - 3, centerY - 5, CELL_SIZE * 0.06, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Default circle for fruit/spark/prism
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, CELL_SIZE * 0.27 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.beginPath();
+    ctx.arc(centerX - 4, centerY - 5, CELL_SIZE * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
 }
 
 function drawEyes(head) {
@@ -274,13 +328,146 @@ function drawEffects() {
   ctx.globalAlpha = 1;
 }
 
+function drawTrail(state) {
+  if (state.state !== "running" || state.trailHistory.length < 2) return;
+  const alphas = [0.25, 0.15, 0.08];
+  const indices = [1, 3, 5]; // Skip every other for spacing
+  for (let i = 0; i < indices.length; i++) {
+    const idx = indices[i];
+    if (idx >= state.trailHistory.length) break;
+    const pos = state.trailHistory[idx];
+    const inset = 5;
+    const x = pos.x * CELL_SIZE + inset;
+    const y = pos.y * CELL_SIZE + inset;
+    const size = CELL_SIZE - inset * 2;
+    ctx.globalAlpha = alphas[i];
+    ctx.fillStyle = COLORS.snake;
+    roundedRect(x, y, size, size, 7);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawComboPulse(state) {
+  const combo = getActiveCombo(state);
+  if (combo < 4) return;
+  const intensity = (combo - 3) / 13; // x4 → ~0.08, x8 → ~0.38
+  const alpha = Math.min(0.45, intensity * (0.7 + 0.3 * Math.sin(performance.now() / 300)));
+  const edgeSize = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT) * 0.08;
+
+  // Gradient from edges inward — low combo green, high combo gold
+  const t = Math.min(1, (combo - 4) / 8); // 0 at x4, 1 at x12
+  const r = Math.round(92 + t * 167); // 92 → 255
+  const g = Math.round(242 - t * 33); // 242 → 209
+  const b = Math.round(139 - t * 47); // 139 → 102
+  const color = "rgba(" + r + "," + g + "," + b + ",";
+
+  // Top edge
+  const topGrad = ctx.createLinearGradient(0, 0, 0, edgeSize);
+  topGrad.addColorStop(0, color + alpha + ")");
+  topGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, edgeSize);
+
+  // Bottom edge
+  const botGrad = ctx.createLinearGradient(0, CANVAS_HEIGHT, 0, CANVAS_HEIGHT - edgeSize);
+  botGrad.addColorStop(0, color + alpha + ")");
+  botGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = botGrad;
+  ctx.fillRect(0, CANVAS_HEIGHT - edgeSize, CANVAS_WIDTH, edgeSize);
+
+  // Left edge
+  const leftGrad = ctx.createLinearGradient(0, 0, edgeSize, 0);
+  leftGrad.addColorStop(0, color + alpha + ")");
+  leftGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = leftGrad;
+  ctx.fillRect(0, 0, edgeSize, CANVAS_HEIGHT);
+
+  // Right edge
+  const rightGrad = ctx.createLinearGradient(CANVAS_WIDTH, 0, CANVAS_WIDTH - edgeSize, 0);
+  rightGrad.addColorStop(0, color + alpha + ")");
+  rightGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = rightGrad;
+  ctx.fillRect(CANVAS_WIDTH - edgeSize, 0, edgeSize, CANVAS_HEIGHT);
+}
+
+function drawHueShift(state) {
+  if (performance.now() >= state.hueShiftUntil) return;
+  const remaining = state.hueShiftUntil - performance.now();
+  const progress = 1 - remaining / CONFIG.HUE_SHIFT_DURATION;
+  const alpha = 0.12 * (1 - progress);
+  ctx.fillStyle = "rgba(169,139,255," + alpha + ")";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+function drawCountdownTimers(state) {
+  const now = performance.now();
+  const timers = [];
+
+  if (now < state.multiplierUntil) {
+    timers.push({
+      label: "×2 得分",
+      remain: state.multiplierUntil - now,
+      total: CONFIG.PRISM_DURATION_MS,
+      color: COLORS.prism
+    });
+  }
+  if (now < state.shieldUntil) {
+    timers.push({
+      label: "护盾",
+      remain: state.shieldUntil - now,
+      total: CONFIG.SHIELD_DURATION_MS,
+      color: COLORS.shield
+    });
+  }
+  if (now < state.slowUntil) {
+    timers.push({ label: "缓速", remain: state.slowUntil - now, total: CONFIG.SLOW_DURATION_MS, color: COLORS.slow });
+  }
+
+  if (timers.length === 0) return;
+
+  const padding = 12;
+  const barWidth = 100;
+  const barHeight = 6;
+  const rowHeight = 32;
+  const startX = CANVAS_WIDTH - padding - barWidth;
+  let startY = padding;
+
+  timers.forEach(function (t) {
+    const secs = Math.ceil(t.remain / 1000);
+    const frac = t.remain / t.total;
+
+    // Background bar
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    roundedRect(startX, startY + 18, barWidth, barHeight, 3);
+    ctx.fill();
+
+    // Filled bar
+    ctx.fillStyle = t.color;
+    roundedRect(startX, startY + 18, barWidth * frac, barHeight, 3);
+    ctx.fill();
+
+    // Label + time text
+    ctx.font = "700 13px Inter, system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillStyle = t.color;
+    ctx.fillText(t.label + " " + secs + "s", startX + barWidth, startY + 14);
+
+    startY += rowHeight;
+  });
+}
+
 function render() {
   drawBoard();
   drawFoodItem(state.food);
   drawFoodItem(state.specialFood);
   drawObstacles();
+  drawTrail(state);
   drawSnake();
   drawEffects();
+  drawComboPulse(state);
+  drawHueShift(state);
+  drawCountdownTimers(state);
 }
 
 export { invalidateBgCache, render };

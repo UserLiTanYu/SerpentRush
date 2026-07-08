@@ -11,12 +11,19 @@ const CONFIG = {
   SCORE_FRUIT: 10,
   SCORE_SPARK: 20,
   SCORE_PRISM: 30,
+  SCORE_SHIELD: 15,
+  SCORE_SLOW: 10,
   SCORE_PER_LEVEL: 80,
   RUSH_FRUIT_GAIN: 12,
   RUSH_SPECIAL_GAIN: 24,
   RUSH_DECAY: 0.5,
   RUSH_SPEED_BOOST: 32,
-  PRISM_MULTIPLIER_TICKS: 50,
+  PRISM_DURATION_MS: 10000,
+  SHIELD_DURATION_MS: 8000,
+  SLOW_DURATION_MS: 12000,
+  SLOW_SPEED_FACTOR: 2,
+  TRAIL_LENGTH: 6,
+  HUE_SHIFT_DURATION: 400,
   OBSTACLE_START_LEVEL: 2,
   OBSTACLE_BASE: 4,
   OBSTACLE_PER_LEVEL: 2,
@@ -24,7 +31,10 @@ const CONFIG = {
   OBSTACLE_SAFE_DISTANCE: 6,
   SPECIAL_SPAWN_BASE: 0.035,
   SPECIAL_SPAWN_PER_LEVEL: 0.004,
-  SPECIAL_SPARK_CHANCE: 0.56,
+  SPECIAL_SPARK_CHANCE: 0.40,
+  SPECIAL_PRISM_CHANCE: 0.25,
+  SPECIAL_SHIELD_CHANCE: 0.20,
+  SPECIAL_SLOW_CHANCE: 0.15,
   BASE_INTERVAL: 150,
   SPEED_PER_LEVEL: 9,
   SPEED_REDUCTION_CAP: 72,
@@ -67,6 +77,8 @@ const CONFIG = {
   TONE_FRUIT_HZ: 360,
   TONE_SPARK_HZ: 580,
   TONE_PRISM_HZ: 720,
+  TONE_SHIELD_HZ: 440,
+  TONE_SLOW_HZ: 260,
   MUSIC_BPM: 126,
   MUSIC_SCHEDULE_INTERVAL: 260,
 };
@@ -94,6 +106,8 @@ const COLORS = {
   fruit: "#ff6b6b",
   spark: "#4dd7ff",
   prism: "#a98bff",
+  shield: "#ffd166",
+  slow: "#ff8ec4",
   wall: "#68707b",
   text: "#f6f1e8",
   muted: "rgba(246,241,232,0.64)"
@@ -143,7 +157,7 @@ function spawnItem(state, type) {
   return point;
 }
 function getActiveCombo(state) {
-  return state.combo * (state.multiplierTicks > 0 ? 2 : 1);
+  return state.combo * (performance.now() < state.multiplierUntil ? 2 : 1);
 }
 function readBestScore(difficulty) {
   return Number(localStorage.getItem("serpentRushBest_" + difficulty) || "0");
@@ -190,7 +204,11 @@ class GameState {
     this.combo = 1;
     this.level = 1;
     this.rush = 0;
-    this.multiplierTicks = 0;
+    this.multiplierUntil = 0;
+    this.shieldUntil = 0;
+    this.slowUntil = 0;
+    this.trailHistory = [];
+    this.hueShiftUntil = 0;
     this.moveTimer = 0;
     this.lastTime = 0;
     this.roundElapsed = 0;
@@ -211,6 +229,8 @@ class GameState {
     this.fruitCount = 0;
     this.sparkCount = 0;
     this.prismCount = 0;
+    this.shieldCount = 0;
+    this.slowCount = 0;
     this.difficulty = "normal";
     this.achievements = loadAchievements();
     this.achievementsNew = [];
@@ -230,7 +250,11 @@ class GameState {
     this.combo = 1;
     this.level = 1;
     this.rush = 0;
-    this.multiplierTicks = 0;
+    this.multiplierUntil = 0;
+    this.shieldUntil = 0;
+    this.slowUntil = 0;
+    this.trailHistory = [];
+    this.hueShiftUntil = 0;
     this.moveTimer = 0;
     this.roundElapsed = 0;
     this.maxCombo = 1;
@@ -238,6 +262,8 @@ class GameState {
     this.fruitCount = 0;
     this.sparkCount = 0;
     this.prismCount = 0;
+    this.shieldCount = 0;
+    this.slowCount = 0;
     this.achievementsNew = [];
     this.everRushed = false;
     this.earlySurvived = false;
@@ -303,7 +329,12 @@ function playTone(type) {
   if (!state.audioContext) {
     return;
   }
-  const frequency = type === "fruit" ? CONFIG.TONE_FRUIT_HZ : type === "spark" ? CONFIG.TONE_SPARK_HZ : CONFIG.TONE_PRISM_HZ;
+  const frequency =
+    type === "fruit" ? CONFIG.TONE_FRUIT_HZ :
+    type === "spark" ? CONFIG.TONE_SPARK_HZ :
+    type === "prism" ? CONFIG.TONE_PRISM_HZ :
+    type === "shield" ? CONFIG.TONE_SHIELD_HZ :
+    CONFIG.TONE_SLOW_HZ;
   const osc = state.audioContext.createOscillator();
   const gain = state.audioContext.createGain();
   osc.frequency.value = frequency;
@@ -314,6 +345,21 @@ function playTone(type) {
   gain.connect(state.audioContext.destination);
   osc.start();
   osc.stop(state.audioContext.currentTime + 0.13);
+}
+function playShieldHit() {
+  if (!state.audioContext) {
+    return;
+  }
+  const osc = state.audioContext.createOscillator();
+  const gain = state.audioContext.createGain();
+  osc.frequency.value = CONFIG.TONE_SHIELD_HZ;
+  osc.type = "sine";
+  gain.gain.setValueAtTime(0.09, state.audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, state.audioContext.currentTime + 0.08);
+  osc.connect(gain);
+  gain.connect(state.audioContext.destination);
+  osc.start();
+  osc.stop(state.audioContext.currentTime + 0.09);
 }
 function playMusicNote(frequency, startTime, duration, type, volume) {
   if (!state.musicGain || frequency <= 0) {
@@ -550,22 +596,66 @@ function drawFoodItem(item) {
   if (!item) {
     return;
   }
-  const color = item.type === "spark" ? COLORS.spark : item.type === "prism" ? COLORS.prism : COLORS.fruit;
+  const color =
+    item.type === "spark" ? COLORS.spark :
+    item.type === "prism" ? COLORS.prism :
+    item.type === "shield" ? COLORS.shield :
+    item.type === "slow" ? COLORS.slow :
+    COLORS.fruit;
   const centerX = (item.x + 0.5) * CELL_SIZE;
   const centerY = (item.y + 0.5) * CELL_SIZE;
   const pulse = 1 + Math.sin(performance.now() / 120) * 0.07;
+  const now = performance.now();
   ctx.save();
   ctx.shadowColor = color;
   ctx.shadowBlur = item.type === "fruit" ? 14 : 24;
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, CELL_SIZE * 0.27 * pulse, 0, Math.PI * 2);
-  ctx.fill();
+
+  if (item.type === "shield") {
+    const glowPulse = 0.85 + 0.15 * Math.sin(now / 200);
+    const r = CELL_SIZE * 0.3 * pulse * glowPulse;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 6;
+      const px = centerX + r * Math.cos(angle);
+      const py = centerY + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.beginPath();
+    ctx.arc(centerX - 3, centerY - 4, CELL_SIZE * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (item.type === "slow") {
+    const r = CELL_SIZE * 0.27 * pulse;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    const barW = r * 0.7;
+    const barH = 2.5;
+    ctx.fillRect(centerX - barW / 2, centerY - 4, barW, barH);
+    ctx.fillRect(centerX - barW / 2, centerY + 2, barW, barH);
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.beginPath();
+    ctx.arc(centerX - 3, centerY - 5, CELL_SIZE * 0.06, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, CELL_SIZE * 0.27 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.beginPath();
+    ctx.arc(centerX - 4, centerY - 5, CELL_SIZE * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
-  ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.beginPath();
-  ctx.arc(centerX - 4, centerY - 5, CELL_SIZE * 0.07, 0, Math.PI * 2);
-  ctx.fill();
 }
 function drawEyes(head) {
   const centerX = (head.x + 0.5) * CELL_SIZE;
@@ -622,13 +712,111 @@ function drawEffects() {
   });
   ctx.globalAlpha = 1;
 }
+function drawTrail(state) {
+  if (state.state !== "running" || state.trailHistory.length < 2) return;
+  const alphas = [0.25, 0.15, 0.08];
+  const indices = [1, 3, 5];
+  for (let i = 0; i < indices.length; i++) {
+    const idx = indices[i];
+    if (idx >= state.trailHistory.length) break;
+    const pos = state.trailHistory[idx];
+    const inset = 5;
+    const x = pos.x * CELL_SIZE + inset;
+    const y = pos.y * CELL_SIZE + inset;
+    const size = CELL_SIZE - inset * 2;
+    ctx.globalAlpha = alphas[i];
+    ctx.fillStyle = COLORS.snake;
+    roundedRect(x, y, size, size, 7);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawComboPulse(state) {
+  const combo = getActiveCombo(state);
+  if (combo < 4) return;
+  const intensity = (combo - 3) / 13;
+  const alpha = Math.min(0.45, intensity * (0.7 + 0.3 * Math.sin(performance.now() / 300)));
+  const edgeSize = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT) * 0.08;
+  const t = Math.min(1, (combo - 4) / 8);
+  const r = Math.round(92 + t * 167);
+  const g = Math.round(242 - t * 33);
+  const b = Math.round(139 - t * 47);
+  const color = "rgba(" + r + "," + g + "," + b + ",";
+  const topGrad = ctx.createLinearGradient(0, 0, 0, edgeSize);
+  topGrad.addColorStop(0, color + alpha + ")");
+  topGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, edgeSize);
+  const botGrad = ctx.createLinearGradient(0, CANVAS_HEIGHT, 0, CANVAS_HEIGHT - edgeSize);
+  botGrad.addColorStop(0, color + alpha + ")");
+  botGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = botGrad;
+  ctx.fillRect(0, CANVAS_HEIGHT - edgeSize, CANVAS_WIDTH, edgeSize);
+  const leftGrad = ctx.createLinearGradient(0, 0, edgeSize, 0);
+  leftGrad.addColorStop(0, color + alpha + ")");
+  leftGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = leftGrad;
+  ctx.fillRect(0, 0, edgeSize, CANVAS_HEIGHT);
+  const rightGrad = ctx.createLinearGradient(CANVAS_WIDTH, 0, CANVAS_WIDTH - edgeSize, 0);
+  rightGrad.addColorStop(0, color + alpha + ")");
+  rightGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = rightGrad;
+  ctx.fillRect(CANVAS_WIDTH - edgeSize, 0, edgeSize, CANVAS_HEIGHT);
+}
+function drawHueShift(state) {
+  if (performance.now() >= state.hueShiftUntil) return;
+  const remaining = state.hueShiftUntil - performance.now();
+  const progress = 1 - remaining / CONFIG.HUE_SHIFT_DURATION;
+  const alpha = 0.12 * (1 - progress);
+  ctx.fillStyle = "rgba(169,139,255," + alpha + ")";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+function drawCountdownTimers(state) {
+  const now = performance.now();
+  const timers = [];
+  if (now < state.multiplierUntil) {
+    timers.push({ label: "×2 得分", remain: state.multiplierUntil - now, total: CONFIG.PRISM_DURATION_MS, color: COLORS.prism });
+  }
+  if (now < state.shieldUntil) {
+    timers.push({ label: "护盾", remain: state.shieldUntil - now, total: CONFIG.SHIELD_DURATION_MS, color: COLORS.shield });
+  }
+  if (now < state.slowUntil) {
+    timers.push({ label: "缓速", remain: state.slowUntil - now, total: CONFIG.SLOW_DURATION_MS, color: COLORS.slow });
+  }
+  if (timers.length === 0) return;
+  const padding = 12;
+  const barWidth = 100;
+  const barHeight = 6;
+  const rowHeight = 32;
+  const startX = CANVAS_WIDTH - padding - barWidth;
+  let startY = padding;
+  timers.forEach(function (t) {
+    const secs = Math.ceil(t.remain / 1000);
+    const frac = t.remain / t.total;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    roundedRect(startX, startY + 18, barWidth, barHeight, 3);
+    ctx.fill();
+    ctx.fillStyle = t.color;
+    roundedRect(startX, startY + 18, barWidth * frac, barHeight, 3);
+    ctx.fill();
+    ctx.font = "700 13px Inter, system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillStyle = t.color;
+    ctx.fillText(t.label + " " + secs + "s", startX + barWidth, startY + 14);
+    startY += rowHeight;
+  });
+}
 function render() {
   drawBoard();
   drawFoodItem(state.food);
   drawFoodItem(state.specialFood);
   drawObstacles();
+  drawTrail(state);
   drawSnake();
   drawEffects();
+  drawComboPulse(state);
+  drawHueShift(state);
+  drawCountdownTimers(state);
 }
 
 function spawnObstaclePack() {
@@ -646,12 +834,18 @@ function nextStepInterval() {
   const diff = CONFIG.DIFFICULTIES[state.difficulty];
   const base = diff.baseInterval - Math.min(CONFIG.SPEED_REDUCTION_CAP, (state.level - 1) * diff.speedPerLevel);
   const rushBoost = state.rush >= 100 ? CONFIG.RUSH_SPEED_BOOST : 0;
-  return Math.max(CONFIG.MIN_INTERVAL, base - rushBoost);
+  const interval = Math.max(CONFIG.MIN_INTERVAL, base - rushBoost);
+  return performance.now() < state.slowUntil ? interval * CONFIG.SLOW_SPEED_FACTOR : interval;
 }
 function collectFood(item, type) {
   const multiplier = state.multiplierTicks > 0 ? 2 : 1;
-  const points = type === "fruit" ? CONFIG.SCORE_FRUIT : type === "spark" ? CONFIG.SCORE_SPARK : CONFIG.SCORE_PRISM;
-  const gained = Math.round(points * Math.max(1, state.combo) * multiplier);
+  const basePoints =
+    type === "fruit" ? CONFIG.SCORE_FRUIT :
+    type === "spark" ? CONFIG.SCORE_SPARK :
+    type === "prism" ? CONFIG.SCORE_PRISM :
+    type === "shield" ? CONFIG.SCORE_SHIELD :
+    CONFIG.SCORE_SLOW;
+  const gained = Math.round(basePoints * Math.max(1, state.combo) * multiplier);
   state.score += gained;
   state.combo = Math.min(CONFIG.COMBO_MAX, state.combo + (type === "fruit" ? CONFIG.COMBO_FRUIT_GAIN : CONFIG.COMBO_SPARK_GAIN));
   state.rush = Math.min(100, state.rush + (type === "fruit" ? CONFIG.RUSH_FRUIT_GAIN : CONFIG.RUSH_SPECIAL_GAIN));
@@ -660,7 +854,14 @@ function collectFood(item, type) {
     state.everRushed = true;
   }
   if (type === "prism") {
-    state.multiplierTicks = CONFIG.PRISM_MULTIPLIER_TICKS;
+    state.multiplierUntil = performance.now() + CONFIG.PRISM_DURATION_MS;
+    state.hueShiftUntil = performance.now() + CONFIG.HUE_SHIFT_DURATION;
+  }
+  if (type === "shield") {
+    state.shieldUntil = performance.now() + CONFIG.SHIELD_DURATION_MS;
+  }
+  if (type === "slow") {
+    state.slowUntil = performance.now() + CONFIG.SLOW_DURATION_MS;
   }
   if (type === "fruit") {
     state.fruitCount += 1;
@@ -668,9 +869,18 @@ function collectFood(item, type) {
     state.sparkCount += 1;
   } else if (type === "prism") {
     state.prismCount += 1;
+  } else if (type === "shield") {
+    state.shieldCount += 1;
+  } else if (type === "slow") {
+    state.slowCount += 1;
   }
   state.maxCombo = Math.max(state.maxCombo, getActiveCombo(state));
-  const color = type === "fruit" ? COLORS.fruit : type === "spark" ? COLORS.spark : COLORS.prism;
+  const color =
+    type === "fruit" ? COLORS.fruit :
+    type === "spark" ? COLORS.spark :
+    type === "prism" ? COLORS.prism :
+    type === "shield" ? COLORS.shield :
+    COLORS.slow;
   const particleCount = type === "fruit" ? CONFIG.PARTICLE_FRUIT_COUNT : CONFIG.PARTICLE_SPECIAL_COUNT;
   burst(item, color, particleCount);
   floatText(item, "+" + gained, color);
@@ -682,15 +892,39 @@ function moveSnake() {
     x: state.snake[0].x + state.direction.x,
     y: state.snake[0].y + state.direction.y
   };
-  if (
-    head.x < 0 || head.x >= CONFIG.BOARD_COLUMNS ||
-    head.y < 0 || head.y >= CONFIG.BOARD_ROWS ||
-    state.snake.some(function (part, index) { return index > 0 && part.x === head.x && part.y === head.y; }) ||
-    state.obstacles.some(function (block) { return block.x === head.x && block.y === head.y; })
-  ) {
-    return { gameOver: true };
+
+  const hitWall = head.x < 0 || head.x >= CONFIG.BOARD_COLUMNS || head.y < 0 || head.y >= CONFIG.BOARD_ROWS;
+  const hitSelfIndex = state.snake.findIndex(function (part, index) {
+    return index > 0 && part.x === head.x && part.y === head.y;
+  });
+  const hitSelf = hitSelfIndex >= 0;
+  const hitObstacleIndex = state.obstacles.findIndex(function (block) {
+    return block.x === head.x && block.y === head.y;
+  });
+  const hitObstacle = hitObstacleIndex >= 0;
+
+  if (hitWall || hitSelf || hitObstacle) {
+    if (performance.now() < state.shieldUntil) {
+      if (hitObstacle) {
+        state.obstacles.splice(hitObstacleIndex, 1);
+      } else if (hitSelf && hitSelfIndex > 1) {
+        state.snake.splice(hitSelfIndex);
+      } else {
+        return { gameOver: true };
+      }
+      playShieldHit();
+    } else {
+      return { gameOver: true };
+    }
   }
+
   state.snake.unshift(head);
+
+  state.trailHistory.unshift({ x: head.x, y: head.y });
+  if (state.trailHistory.length > CONFIG.TRAIL_LENGTH) {
+    state.trailHistory.length = CONFIG.TRAIL_LENGTH;
+  }
+
   var grew = false;
   if (head.x === state.food.x && head.y === state.food.y) {
     collectFood(state.food, "fruit");
@@ -713,10 +947,18 @@ function moveSnake() {
     spawnObstaclePack();
   }
   if (!state.specialFood && Math.random() < (CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) * CONFIG.DIFFICULTIES[state.difficulty].specialSpawnMultiplier) {
-    state.specialFood = spawnItem(state, Math.random() < CONFIG.SPECIAL_SPARK_CHANCE ? "spark" : "prism");
-  }
-  if (state.multiplierTicks > 0) {
-    state.multiplierTicks -= 1;
+    const roll = Math.random();
+    let type;
+    if (roll < CONFIG.SPECIAL_SPARK_CHANCE) {
+      type = "spark";
+    } else if (roll < CONFIG.SPECIAL_SPARK_CHANCE + CONFIG.SPECIAL_PRISM_CHANCE) {
+      type = "prism";
+    } else if (roll < CONFIG.SPECIAL_SPARK_CHANCE + CONFIG.SPECIAL_PRISM_CHANCE + CONFIG.SPECIAL_SHIELD_CHANCE) {
+      type = "shield";
+    } else {
+      type = "slow";
+    }
+    state.specialFood = spawnItem(state, type);
   }
   return null;
 }
@@ -1004,6 +1246,10 @@ const boardBgBtn = document.querySelector("#boardBgBtn");
 const achieveBtn = document.querySelector("#achieveBtn");
 const achieveModal = document.querySelector("#achieveModal");
 const closeAchieveButton = document.querySelector("#closeAchieveButton");
+const itemGuideBtn = document.querySelector("#itemGuideBtn");
+const itemGuideModal = document.querySelector("#itemGuideModal");
+const closeItemGuideButton = document.querySelector("#closeItemGuideButton");
+const confirmItemGuideButton = document.querySelector("#confirmItemGuideButton");
 const difficultySelector = document.querySelector("#difficultySelector");
 // ===== GAME FLOW =====
 function setDifficulty(name) {
@@ -1082,6 +1328,13 @@ window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
       event.preventDefault();
       closeAchieve();
+    }
+    return;
+  }
+  if (!itemGuideModal.classList.contains("is-hidden")) {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      itemGuideModal.classList.add("is-hidden");
     }
     return;
   }
@@ -1167,6 +1420,21 @@ closeAchieveButton.addEventListener("click", function () {
 achieveModal.addEventListener("click", function (event) {
   if (event.target === achieveModal) {
     closeAchieve();
+  }
+});
+itemGuideBtn.addEventListener("click", function () {
+  itemGuideModal.classList.remove("is-hidden");
+  closeItemGuideButton.focus();
+});
+closeItemGuideButton.addEventListener("click", function () {
+  itemGuideModal.classList.add("is-hidden");
+});
+confirmItemGuideButton.addEventListener("click", function () {
+  itemGuideModal.classList.add("is-hidden");
+});
+itemGuideModal.addEventListener("click", function (event) {
+  if (event.target === itemGuideModal) {
+    itemGuideModal.classList.add("is-hidden");
   }
 });
 document.querySelectorAll(".achieve-filter-btn").forEach(function (btn) {

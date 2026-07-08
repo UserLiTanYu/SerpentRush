@@ -1,140 +1,160 @@
-# SerpentRush
+<div align="center">
 
-霓虹风格的冲刺贪吃蛇小游戏。
+╔══════════════════════════════════════╗
+║  🐍 SERPENT RUSH 贪吃蛇冲刺        ║
+║  霓虹冲刺 · 连击爆发 · 极速狂飙    ║
+╚══════════════════════════════════════╝
 
-SerpentRush 使用原生 HTML、CSS 和 JavaScript 制作，不需要安装依赖，直接打开浏览器即可游玩。它在经典贪吃蛇规则上加入了连击倍率、冲刺能量、特殊道具、动态障碍和可切换背景，让每一局都更快、更亮，也更考验路线规划。
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Zero Deps](https://img.shields.io/badge/Zero%20Dependencies-00C853?style=flat)
+![MIT License](https://img.shields.io/badge/License-MIT-blue?style=flat)
 
-## 游戏预览
+*在霓虹灯光下，收集果实、叠加连击、突破极限。*
+*一款纯前端实现的冲刺贪吃蛇小游戏。*
 
-从准备开局到高分结算，游戏围绕“收集、连击、冲刺、避障”展开。
+</div>
 
-### 准备界面
+---
 
-点击中央的“开始游戏”按钮即可开局。右侧面板会同步展示分数、最高分、连击倍率、等级、冲刺能量和道具说明。
+## ▸ 游戏截图
 
-![游戏准备界面](assets/start-screen.png)
+### 🟢 开始界面
 
-### 进行中
+点击中央的"开始游戏"按钮即可开局。右侧面板会同步展示分数、最高分、连击倍率、等级、冲刺能量和道具说明。
 
-控制小蛇在棋盘中移动，吃到红色果实获得分数并提升连击。随着等级升高，障碍物会逐渐增多，路线选择会变得更紧张。
+![开始界面](assets/start-screen.png)
+
+### 🎮 进行中
+
+控制小蛇在棋盘中移动，吃到果实获得分数并提升连击。随着等级升高，障碍物会逐渐增多，路线选择会变得更紧张。
 
 ![游戏进行画面](assets/gameplay-screen.png)
 
-### 结算界面
+### 🏆 结算界面
 
 撞到边界、自身或障碍物后，本局结束。结算面板会展示得分、最高连击、最高等级、存活时间和道具收集情况，方便复盘下一局。
 
-![游戏结算界面](assets/result-screen.png)
+![结算界面](assets/result-screen.png)
 
-### 成就面板
+### 📊 成就面板
 
 通过达成各种目标解锁成就，支持按分类筛选，方便查看已完成和未完成的成就。
 
 ![成就面板](assets/achievements-screen.png)
 
-### 玩法说明
+### ❓ 玩法说明
 
 内置完整的玩法说明弹窗，涵盖目标、等级、连击、冲刺与道具、联机等规则介绍。
 
 ![玩法说明](assets/help-screen.png)
 
-## 玩法说明
+---
 
-1. 开始游戏：点击“开始游戏”进入棋盘。
-2. 控制移动：使用方向键或 `WASD` 改变小蛇方向。
-3. 收集果实：吃到果实获得基础分数，并逐步提高连击倍率。
-4. 利用道具：电光能推动冲刺节奏，棱晶能短时间提高得分收益。
-5. 躲避危险：避开边界、自身和灰色障碍物。
-6. 冲击高分：保持连击、合理吃道具，在速度提升后继续坚持。
+## ▸ 玩法说明
 
-## 道具说明
+1. 🎯 **开始游戏** — 点击"开始游戏"进入棋盘
+2. 🕹️ **控制移动** — 使用方向键或 `WASD` 改变小蛇方向
+3. 🍎 **收集果实** — 吃到果实获得基础分数，并逐步提高连击倍率
+4. ⚡ **利用道具** — 电光能推动冲刺节奏，棱晶能短时间提高得分收益
+5. 🧱 **躲避危险** — 避开边界、自身和灰色障碍物
+6. 🏆 **冲击高分** — 保持连击、合理吃道具，在速度提升后继续坚持
 
-| 元素 | 作用 | 玩法重点 |
-| --- | --- | --- |
-| 果实 | 获得基础分数，并增加少量冲刺能量 | 稳定得分来源，适合持续叠连击 |
-| 电光 | 快速补充冲刺能量 | 让节奏变快，适合主动拉开分数 |
-| 棱晶 | 短时间触发得分翻倍 | 高连击时收益更高 |
-| 障碍 | 等级提升后出现在棋盘上 | 撞上会结束本局，需要提前绕开 |
+---
 
-## 操作方式
+## ▸ 道具系统
+
+| 图标 | 道具 | 效果 | 策略 |
+|:---:|:---|:---|:---|
+| 🟢 | 果实 | +10分，+少量能量 | 稳定得分，保持连击 |
+| ⚡ | 电光 | 充满冲刺能量 | 立即进入加速状态 |
+| 💎 | 棱晶 | ×2得分（10秒） | 高连击时收益最大化 |
+| 🛡️ | 护盾 | 8秒无敌 | 撞障碍/自身可存活 |
+| 🔵 | 缓速 | 减速12秒 | 复杂地形精确操控 |
+| 🧱 | 障碍 | 撞上即死 | 需提前绕开 |
+
+---
+
+## ▸ 操作方式
 
 | 操作 | 说明 |
-| --- | --- |
+|:---|:---|
 | 方向键 / `WASD` | 控制移动方向 |
 | 空格键 | 暂停或继续游戏 |
 | 触屏方向按钮 | 移动端方向控制 |
 | 音乐按钮 | 开启或关闭背景音乐 |
 | 换背景按钮 | 切换主界面背景和棋盘背景 |
 
-## 游戏特色
+---
 
-- 原生前端实现，无需安装依赖
-- Canvas 绘制的霓虹风格游戏画面
-- 分数、最高分、连击倍率和等级实时反馈
-- 果实、电光、棱晶带来不同得分节奏
-- 冲刺能量和得分翻倍提升局内爆发感
-- 动态障碍让中后期更有挑战
-- 支持键盘和触屏操作
-- 内置程序化合成器背景音乐
-- 支持切换主背景和棋盘背景
+## ▸ 游戏特色
 
-## 项目结构
+- 🎨 **霓虹视觉** — Canvas 绘制的赛博朋克风格游戏画面
+- ⚡ **连击系统** — 连续吃到道具提高得分倍率，最高可达 ×16
+- 💎 **道具丰富** — 果实、电光、棱晶、护盾、缓速 5 种道具
+- 🚀 **冲刺模式** — 能量充满后进入高速节奏
+- 🧱 **动态障碍** — 等级提升后障碍物逐渐增多
+- 🏆 **成就系统** — 12 种成就等待解锁
+- 🎵 **程序音乐** — Web Audio API 合成的背景音乐
+- 🎭 **主题切换** — 支持多种主背景和棋盘背景
+
+---
+
+## ▸ 快速开始
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+# → http://localhost:5173
+
+# 打包生产版本
+npm run build
+
+# 打包单文件 game.js
+npm run bundle
+```
+
+打包后的 `game.js` 可直接通过 `file://` 协议打开 `index.html` 运行。
+
+---
+
+## ▸ 项目结构
 
 ```text
 SerpentRush/
 ├── index.html          # 游戏页面结构
-├── game.js             # 打包后的单文件脚本（由 build/bundle.js 生成）
+├── game.js             # 打包后的单文件脚本
 ├── css/
 │   ├── base.css        # CSS 变量、重置、基础元素
-│   ├── layout.css      # 主布局（App Shell、Game Stage、Side Panel）
-│   ├── stage.css       # 游戏舞台（背景变体、覆盖层、触控板）
-│   ├── panel.css       # 侧边面板（统计、仪表、道具、主题切换）
-│   ├── modals.css      # 弹窗（帮助、成就面板、难度选择器、Toast）
-│   └── responsive.css  # 响应式媒体查询
+│   ├── layout.css      # 主布局
+│   ├── stage.css       # 游戏舞台
+│   ├── panel.css       # 侧边面板
+│   ├── modals.css      # 弹窗
+│   └── responsive.css  # 响应式
 ├── src/
-│   ├── config.js       # 游戏常量、成就定义、颜色调色板
-│   ├── state.js        # GameState 类、碰撞检测、localStorage 工具
-│   ├── effects.js      # 粒子爆发、浮动文字特效
-│   ├── audio.js        # Web Audio API 音效与程序化背景音乐
-│   ├── renderer.js     # Canvas 2D 绘制（背景、蛇、食物、障碍、特效）
-│   ├── game-logic.js   # 核心玩法逻辑（移动、碰撞、收集、障碍生成）
-│   ├── achievements.js # 成就系统（解锁检测、Toast 通知、面板渲染）
-│   ├── ui.js           # UI 管理（HUD、覆盖层、弹窗、主题切换）
-│   ├── input.js        # 触屏方向输入
-│   └── main.js         # 入口：DOM 引用、游戏流程编排、事件绑定、初始化
-├── bundle.js           # 构建脚本，将 src/ 下模块打包为 game.js
-├── package.json        # 项目元信息与 npm 脚本
-├── vite.config.js      # Vite 构建配置
+│   ├── config.js       # 游戏常量、成就定义
+│   ├── state.js        # GameState 类
+│   ├── effects.js      # 粒子特效
+│   ├── audio.js        # 音效与音乐
+│   ├── renderer.js     # Canvas 绘制
+│   ├── game-logic.js   # 核心玩法
+│   ├── achievements.js # 成就系统
+│   ├── ui.js           # UI 管理
+│   ├── input.js        # 触屏输入
+│   └── main.js         # 入口
 ├── assets/             # README 展示图片
 ├── README.md           # 项目说明
-└── .gitignore          # Git 忽略规则
+└── package.json        # 项目配置
 ```
 
-### 开发说明
+---
 
-源代码使用 ES 模块组织在 `src/` 和 `css/` 目录下。
+<div align="center">
 
-```bash
-# 首次安装依赖
-npm install
+**Made with ❤️ and HTML5 Canvas**
 
-# 启动开发服务器（支持热更新）
-npm run dev
-# → 浏览器打开 http://localhost:5173
-
-# 打包生产版本（输出到 dist/）
-npm run build
-
-# 旧方式：打包单文件 game.js（file:// 直接打开）
-npm run bundle
-```
-
-### 旧开发方式（备选）
-
-`npm run bundle` 会调用 `node bundle.js` 将 `src/` 下所有模块合并为 `game.js`。打包后将 `index.html` 中的脚本标签改回 `<script src="game.js"></script>`，即可双击打开。运行方式
-
-右键 `index.html` → 用浏览器打开，或启动本地服务器：
-
-```bash
-npm run dev
-```
+</div>

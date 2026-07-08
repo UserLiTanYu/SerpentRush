@@ -1,7 +1,7 @@
 import { CONFIG, COLORS, DIRECTIONS } from "./config.js";
 import { spawnItem, getActiveCombo, readBestScore, state } from "./state.js";
 import { burst, floatText } from "./effects.js";
-import { playTone } from "./audio.js";
+import { playTone, playShieldHit } from "./audio.js";
 
 function spawnObstaclePack() {
   const diff = CONFIG.DIFFICULTIES[state.difficulty];
@@ -23,13 +23,23 @@ function nextStepInterval() {
   const diff = CONFIG.DIFFICULTIES[state.difficulty];
   const base = diff.baseInterval - Math.min(CONFIG.SPEED_REDUCTION_CAP, (state.level - 1) * diff.speedPerLevel);
   const rushBoost = state.rush >= 100 ? CONFIG.RUSH_SPEED_BOOST : 0;
-  return Math.max(CONFIG.MIN_INTERVAL, base - rushBoost);
+  const interval = Math.max(CONFIG.MIN_INTERVAL, base - rushBoost);
+  return performance.now() < state.slowUntil ? interval * CONFIG.SLOW_SPEED_FACTOR : interval;
 }
 
 function collectFood(item, type) {
   const multiplier = state.multiplierTicks > 0 ? 2 : 1;
-  const points = type === "fruit" ? CONFIG.SCORE_FRUIT : type === "spark" ? CONFIG.SCORE_SPARK : CONFIG.SCORE_PRISM;
-  const gained = Math.round(points * Math.max(1, state.combo) * multiplier);
+  const basePoints =
+    type === "fruit"
+      ? CONFIG.SCORE_FRUIT
+      : type === "spark"
+        ? CONFIG.SCORE_SPARK
+        : type === "prism"
+          ? CONFIG.SCORE_PRISM
+          : type === "shield"
+            ? CONFIG.SCORE_SHIELD
+            : CONFIG.SCORE_SLOW;
+  const gained = Math.round(basePoints * Math.max(1, state.combo) * multiplier);
 
   state.score += gained;
   state.combo = Math.min(
@@ -43,7 +53,14 @@ function collectFood(item, type) {
     state.everRushed = true;
   }
   if (type === "prism") {
-    state.multiplierTicks = CONFIG.PRISM_MULTIPLIER_TICKS;
+    state.multiplierUntil = performance.now() + CONFIG.PRISM_DURATION_MS;
+    state.hueShiftUntil = performance.now() + CONFIG.HUE_SHIFT_DURATION;
+  }
+  if (type === "shield") {
+    state.shieldUntil = performance.now() + CONFIG.SHIELD_DURATION_MS;
+  }
+  if (type === "slow") {
+    state.slowUntil = performance.now() + CONFIG.SLOW_DURATION_MS;
   }
 
   if (type === "fruit") {
@@ -52,11 +69,24 @@ function collectFood(item, type) {
     state.sparkCount += 1;
   } else if (type === "prism") {
     state.prismCount += 1;
+  } else if (type === "shield") {
+    state.shieldCount += 1;
+  } else if (type === "slow") {
+    state.slowCount += 1;
   }
 
   state.maxCombo = Math.max(state.maxCombo, getActiveCombo(state));
 
-  const color = type === "fruit" ? COLORS.fruit : type === "spark" ? COLORS.spark : COLORS.prism;
+  const color =
+    type === "fruit"
+      ? COLORS.fruit
+      : type === "spark"
+        ? COLORS.spark
+        : type === "prism"
+          ? COLORS.prism
+          : type === "shield"
+            ? COLORS.shield
+            : COLORS.slow;
   const particleCount = type === "fruit" ? CONFIG.PARTICLE_FRUIT_COUNT : CONFIG.PARTICLE_SPECIAL_COUNT;
   burst(item, color, particleCount);
   floatText(item, "+" + gained, color);
@@ -71,22 +101,43 @@ function moveSnake() {
     y: state.snake[0].y + state.direction.y
   };
 
-  if (
-    head.x < 0 ||
-    head.x >= CONFIG.BOARD_COLUMNS ||
-    head.y < 0 ||
-    head.y >= CONFIG.BOARD_ROWS ||
-    state.snake.some(function (part, index) {
-      return index > 0 && part.x === head.x && part.y === head.y;
-    }) ||
-    state.obstacles.some(function (block) {
-      return block.x === head.x && block.y === head.y;
-    })
-  ) {
-    return { gameOver: true };
+  // Collision detection with shield support
+  const hitWall = head.x < 0 || head.x >= CONFIG.BOARD_COLUMNS || head.y < 0 || head.y >= CONFIG.BOARD_ROWS;
+  const hitSelfIndex = state.snake.findIndex(function (part, index) {
+    return index > 0 && part.x === head.x && part.y === head.y;
+  });
+  const hitSelf = hitSelfIndex >= 0;
+  const hitObstacleIndex = state.obstacles.findIndex(function (block) {
+    return block.x === head.x && block.y === head.y;
+  });
+  const hitObstacle = hitObstacleIndex >= 0;
+
+  if (hitWall || hitSelf || hitObstacle) {
+    if (performance.now() < state.shieldUntil) {
+      // Shield absorbs the hit
+      if (hitObstacle) {
+        state.obstacles.splice(hitObstacleIndex, 1);
+      } else if (hitSelf && hitSelfIndex > 1) {
+        // Truncate snake at collision point (remove segments from collision to tail)
+        state.snake.splice(hitSelfIndex);
+      } else {
+        // Wall collision or self-collision at segment right after head — shield can't save
+        return { gameOver: true };
+      }
+      playShieldHit();
+      // Don't consume shield ticks here — ticks decrement normally below
+    } else {
+      return { gameOver: true };
+    }
   }
 
   state.snake.unshift(head);
+
+  // Update trail history
+  state.trailHistory.unshift({ x: head.x, y: head.y });
+  if (state.trailHistory.length > CONFIG.TRAIL_LENGTH) {
+    state.trailHistory.length = CONFIG.TRAIL_LENGTH;
+  }
 
   var grew = false;
   if (head.x === state.food.x && head.y === state.food.y) {
@@ -119,11 +170,18 @@ function moveSnake() {
       (CONFIG.SPECIAL_SPAWN_BASE + state.level * CONFIG.SPECIAL_SPAWN_PER_LEVEL) *
         CONFIG.DIFFICULTIES[state.difficulty].specialSpawnMultiplier
   ) {
-    state.specialFood = spawnItem(state, Math.random() < CONFIG.SPECIAL_SPARK_CHANCE ? "spark" : "prism");
-  }
-
-  if (state.multiplierTicks > 0) {
-    state.multiplierTicks -= 1;
+    const roll = Math.random();
+    let type;
+    if (roll < CONFIG.SPECIAL_SPARK_CHANCE) {
+      type = "spark";
+    } else if (roll < CONFIG.SPECIAL_SPARK_CHANCE + CONFIG.SPECIAL_PRISM_CHANCE) {
+      type = "prism";
+    } else if (roll < CONFIG.SPECIAL_SPARK_CHANCE + CONFIG.SPECIAL_PRISM_CHANCE + CONFIG.SPECIAL_SHIELD_CHANCE) {
+      type = "shield";
+    } else {
+      type = "slow";
+    }
+    state.specialFood = spawnItem(state, type);
   }
 
   return null;

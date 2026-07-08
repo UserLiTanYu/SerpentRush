@@ -22,7 +22,7 @@ function spawnItem(state, type) {
 }
 
 function getActiveCombo(state) {
-  return state.combo * (state.multiplierTicks > 0 ? 2 : 1);
+  return state.combo * (performance.now() < state.multiplierUntil ? 2 : 1);
 }
 
 function readBestScore(difficulty) {
@@ -77,7 +77,11 @@ class GameState {
     this.combo = 1;
     this.level = 1;
     this.rush = 0;
-    this.multiplierTicks = 0;
+    this.multiplierUntil = 0;
+    this.shieldUntil = 0;
+    this.slowUntil = 0;
+    this.trailHistory = [];
+    this.hueShiftUntil = 0;
     this.moveTimer = 0;
     this.lastTime = 0;
     this.roundElapsed = 0;
@@ -98,6 +102,8 @@ class GameState {
     this.fruitCount = 0;
     this.sparkCount = 0;
     this.prismCount = 0;
+    this.shieldCount = 0;
+    this.slowCount = 0;
     this.difficulty = "normal";
     this.achievements = loadAchievements();
     this.achievementsNew = [];
@@ -118,7 +124,11 @@ class GameState {
     this.combo = 1;
     this.level = 1;
     this.rush = 0;
-    this.multiplierTicks = 0;
+    this.multiplierUntil = 0;
+    this.shieldUntil = 0;
+    this.slowUntil = 0;
+    this.trailHistory = [];
+    this.hueShiftUntil = 0;
     this.moveTimer = 0;
     this.roundElapsed = 0;
     this.maxCombo = 1;
@@ -126,6 +136,8 @@ class GameState {
     this.fruitCount = 0;
     this.sparkCount = 0;
     this.prismCount = 0;
+    this.shieldCount = 0;
+    this.slowCount = 0;
     this.achievementsNew = [];
     this.everRushed = false;
     this.earlySurvived = false;

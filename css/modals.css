@@ -314,3 +314,54 @@
   font-size: 0.7rem;
   opacity: 0.7;
 }
+
+/* ===== Item Guide Modal ===== */
+.item-guide-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.item-guide-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+}
+
+.item-guide-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.item-guide-header strong {
+  color: var(--text);
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.item-guide-header .legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.item-guide-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(255, 209, 102, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.item-guide-card p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
